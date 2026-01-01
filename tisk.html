@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Objednávka tisku | Fotograf</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .success-message {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #d4edda;
+            color: #155724;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <aside class="sidebar">
+        <div class="logo">
+              <img src="img/logo.webp" alt="Logo" / style="width: 50%;">
+        </div>
+        <nav>
+            <ul>
+                <li><a href="omne.html">O mně</a></li>
+                <li><a href="fotogalerie.html">Fotogalerie</a></li>
+                <li><a href="sluzby.html">Služby</a></li>
+                <li><a href="tisk.html">Tisk</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="content">
+        <h1>Objednávka tisku fotografií</h1>
+        <p>Vyplňte formulář a já vám připravím objednávku. Po odeslání obdržíte potvrzení e-mailem.</p>
+
+        <!-- SUCCESS MESSAGE -->
+        <div id="successMessage" class="success-message">
+            Objednávka byla odeslána.
+        </div>
+
+        <!-- FORMULÁŘ -->
+        <form name="tisk-form" method="POST" data-netlify="true" netlify-honeypot="bot-field" 
+              onsubmit="submitButton.disabled=true; submitButton.innerText='Odesílám...';">
+
+            <input type="hidden" name="form-name" value="tisk-form">
+            <p style="display:none">
+                <label>Don’t fill this out if you're human: <input name="bot-field"></label>
+            </p>
+
+            <label for="jmeno">Jméno:</label>
+            <input type="text" id="jmeno" name="jmeno" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="telefon">Telefonní číslo:</label>
+            <input type="tel" id="telefon" name="telefon">
+
+            <label for="cisla">Čísla fotografií ze Zoneramy:</label>
+            <textarea id="cisla" name="cisla" placeholder="např. 1, 3, 7" required></textarea>
+
+            <label for="format">Formát:</label>
+            <select id="format" name="format" required>
+                <option value="">Vyberte formát</option>
+                <option value="10x15 lesk 10 Kč">10x15 lesk 10 Kč</option>
+                <option value="10x15 polomat 10 Kč">10x15 polomat 10 Kč</option>
+                <option value="13x18 lesk 15 Kč">13x18 lesk 15 Kč</option>
+                <option value="13x18 polomat 15 Kč">13x18 polomat 15 Kč</option>
+                <option value="A4 lesk 45 Kč">A4 lesk 45 Kč</option>
+                <option value="A4 polomat 45 Kč">A4 polomat 45 Kč</option>
+            </select>
+
+            <label for="poznamka">Poznámka:</label>
+            <textarea id="poznamka" name="poznamka" placeholder="Např. rychlý tisk, dárkový obal"></textarea>
+
+            <button type="submit" id="submitButton">Odeslat objednávku</button>
+            <input type="hidden" name="reply-to" id="reply-to">
+        </form>
+
+        <script>
+            const form = document.querySelector('form[name="tisk-form"]');
+            const successMessage = document.getElementById('successMessage');
+
+            form.addEventListener('submit', function(e){
+                // vložíme email klienta pro potvrzení
+                document.getElementById('reply-to').value = document.getElementById('email').value;
+
+                // zobrazíme zprávu okamžitě po odeslání
+                successMessage.style.display = 'block';
+            });
+        </script>
+
+    </main>
+</div>
+
+</body>
+</html>

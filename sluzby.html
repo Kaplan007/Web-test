@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Služby | Fotograf</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Jednoduché zarovnání obrázků a textu u služeb */
+        .service {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 50px;
+            align-items: flex-start;
+        }
+        .service img {
+            width: 300px;
+            max-width: 100%;
+            margin-right: 20px;
+            margin-bottom: 15px;
+            border-radius: 14px;
+        }
+        .service-text {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        /* Responzivita pro mobil */
+        @media (max-width: 800px) {
+            .service {
+                flex-direction: column;
+                align-items: center;
+            }
+            .service img {
+                margin-right: 0;
+            }
+            .service-text {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <!-- LOGO -->
+        <div class="logo">
+            <img src="img/logo.webp" alt="Logo" / style="width: 50%;">
+        </div>
+
+        <!-- MENU -->
+        <nav>
+            <ul>
+                <li><a href="omne.html">O mně</a></li>
+                <li><a href="fotogalerie.html">Fotogalerie</a></li>
+                <li><a href="sluzby.html">Služby</a></li>
+                <li><a href="tisk.html">Tisk</a></li>
+            </ul>
+        </nav>
+
+    </aside>
+
+    <!-- OBSAH -->
+    <main class="content">
+
+        <h1>Služby</h1>
+
+        <!-- 1. služba -->
+        <div class="service">
+            <img src="img/sluzba1.webp" alt="Rodinné focení v přírodě">
+            <div class="service-text">
+                <h2>Přirozené snímky vaší rodiny v přírodě</h2>
+                <p>
+                    Fotografování rodin s dětmi v exteriéru je zábavný a přirozený způsob, jak zachytit ty nejkrásnější momenty.
+                    Děti se v přírodě cítí svobodně a uvolněně, což se odráží i na fotografiích. V Plzni a okolí vás vyfotím
+                    na vašem oblíbeném místě, nebo vám můžu nějaká místa doporučit.
+                </p>
+            </div>
+        </div>
+
+        <!-- 2. služba -->
+        <div class="service">
+            <img src="img/sluzba2.webp" alt="Oslavy a sportovní akce">
+            <div class="service-text">
+                <h2>Váš výjimečný den v obrazech: oslavy, večírky, sportovní akce</h2>
+                <p>
+                    Fotografování oslav, večírků a sportovních akcí umožňuje zachytit vzpomínky a emoce, ke kterým se budete rádi vracet.
+                    Pracuji nenápadně, abych nerušil průběh vaší akce.
+                </p>
+            </div>
+        </div>
+
+        <!-- 3. služba -->
+        <div class="service">
+            <img src="img/sluzba3.webp" alt="Fotokoutek s tiskem">
+            <div class="service-text">
+                <h2>Fotokoutek s tiskem</h2>
+                <p>
+                    Připravím pro Vás fotokoutek v tématickém stylu s okamžitým tiskem fotografií.
+                </p>
+            </div>
+        </div>
+
+        <!-- Závěrečný text -->
+        <p>
+            Pokud máte zájem o jiné fotografické služby, neváhejte mě kontaktovat.
+            Svatby a maturitní plesy nejsou můj obor.
+        </p>
+
+    </main>
+
+</div>
+
+</body>
+</html>
