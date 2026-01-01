@@ -84,8 +84,9 @@
             <label for="poznamka">Poznámka:</label>
             <textarea id="poznamka" name="poznamka" placeholder="Např. rychlý tisk, dárkový obal"></textarea>
 
-            <button type="submit" id="submitButton">Odeslat objednávku</button>
             <input type="hidden" name="reply-to" id="reply-to">
+
+            <button type="submit" id="submitButton">Odeslat objednávku</button>
         </form>
 
         <script>
@@ -94,10 +95,23 @@
             const submitButton = document.getElementById('submitButton');
 
             form.addEventListener('submit', function(e){
-                e.preventDefault(); // zabrání klasickému reloadu/redirectu
-
                 // vložíme email klienta pro potvrzení
                 document.getElementById('reply-to').value = document.getElementById('email').value;
 
-                // AJAX odeslání Netlify
-                co
+                // UX hláška při submitu
+                submitButton.disabled = true;
+                submitButton.innerText = 'Odesílám...';
+
+                // Počkej 0.5s, aby uživatel viděl změnu a Netlify zpracovalo submit
+                setTimeout(() => {
+                    successMessage.style.display = 'block';
+                    submitButton.innerText = 'Odesláno';
+                }, 500);
+            });
+        </script>
+
+    </main>
+</div>
+
+</body>
+</html>
