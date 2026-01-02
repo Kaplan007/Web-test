@@ -1,7 +1,6 @@
 /* =========================
    RESET & ZÁKLAD
 ========================= */
-
 * {
     box-sizing: border-box;
 }
@@ -12,13 +11,12 @@ body {
     font-size: 16px;
     line-height: 1.7;
     color: #222;
-    background-color: #f2f2f2;
+    background-color: #ffffff; /* Bílé pozadí */
 }
 
 /* =========================
    LAYOUT
 ========================= */
-
 .container {
     display: flex;
     min-height: 100vh;
@@ -27,12 +25,21 @@ body {
 /* =========================
    SIDEBAR / MENU
 ========================= */
-
 .sidebar {
     width: 240px;
-    background-color: #111;
-    color: #fff;
+    background-color: #ffffff; /* Bílé */
+    color: #222;
     padding: 30px 20px;
+    border-right: 1px solid #e5e5e5;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Logo + menu centrované */
+}
+
+.sidebar .logo {
+    margin-bottom: 40px;
+    text-align: center;
 }
 
 .sidebar h2 {
@@ -41,20 +48,28 @@ body {
     letter-spacing: 2px;
     margin-bottom: 40px;
     font-weight: 600;
+    color: #111;
 }
 
+/* Menu */
 .sidebar ul {
     list-style: none;
     padding: 0;
     margin: 0;
+    width: 100%;
+    text-align: center; /* Centrované texty */
 }
 
 .sidebar ul li {
     margin: 18px 0;
+    width: 100%;
 }
 
 .sidebar ul li a {
-    color: #ccc;
+    display: block;
+    width: 100%;
+    text-align: center;
+    color: #111;
     text-decoration: none;
     font-size: 15px;
     letter-spacing: 1px;
@@ -62,17 +77,69 @@ body {
 }
 
 .sidebar ul li a:hover {
-    color: #fff;
+    color: #555;
+}
+
+/* Home domeček */
+.sidebar ul li.home a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.sidebar ul li.home svg {
+    width: 26px;
+    height: 26px;
+    fill: #000;
+    transition: fill 0.2s ease, transform 0.2s ease;
+}
+
+.sidebar ul li.home a:hover svg {
+    fill: #555;
+    transform: scale(1.1);
 }
 
 /* =========================
    OBSAH
 ========================= */
+/* Úvodní stránka – obrázek jako pozadí hlavní sekce */
+.intro-section {
+    background-image: url('img/1.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 100px 50px;
+    color: #ffffff;
+    position: relative;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.intro-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.intro-text {
+    position: relative;
+    z-index: 1;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 30px;
+    border-radius: 14px;
+    max-width: 800px;
+    text-align: center;
+}
 
 .content {
     flex: 1;
     padding: 50px;
-    background-color: #fafafa;
+    background-color: #ffffff;
 }
 
 .content h1 {
@@ -96,8 +163,6 @@ body {
 /* =========================
    OBRÁZKY
 ========================= */
-
-/* všechny obsahové fotky */
 .content img {
     max-width: 100%;
     height: auto;
@@ -105,7 +170,6 @@ body {
     border-radius: 14px;
 }
 
-/* galerie */
 .gallery {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -127,14 +191,14 @@ body {
 /* =========================
    FORMULÁŘE
 ========================= */
-
 form {
     max-width: 600px;
     margin-top: 30px;
 }
 
 input,
-textarea {
+textarea,
+select {
     width: 100%;
     padding: 12px 14px;
     margin-bottom: 15px;
@@ -165,9 +229,8 @@ button:hover {
 }
 
 /* =========================
-   RESPONSIVE
+   RESPONSIVE (MOBIL)
 ========================= */
-
 @media (max-width: 800px) {
     .container {
         flex-direction: column;
@@ -175,10 +238,55 @@ button:hover {
 
     .sidebar {
         width: 100%;
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #ffffff;
+        border-bottom: 1px solid #e5e5e5;
+    }
+
+    .sidebar .logo img {
+        width: 40px;
+        height: auto;
+    }
+
+    .sidebar ul {
+        display: flex;
+        flex-direction: row;
+        margin: 0;
+        padding: 0;
+        width: auto;
+        justify-content: center;
         text-align: center;
     }
 
+    .sidebar ul li {
+        margin: 0 10px;
+    }
+
+    .sidebar ul li a {
+        display: block;
+        text-align: center;
+        font-size: 14px;
+        color: #111;
+    }
+
+    .sidebar ul li a:hover {
+        color: #555;
+    }
+
+    .sidebar ul li.home svg {
+        width: 22px;
+        height: 22px;
+    }
+
     .content {
-        padding: 30px;
+        padding: 20px;
+    }
+
+    .intro-text {
+        font-size: 1.6rem;
+        padding: 20px 10px;
     }
 }
