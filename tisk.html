@@ -39,6 +39,7 @@ button.small { padding:6px 12px; font-size:13px; }
 
 <form name="tisk-form" data-netlify="true" netlify-honeypot="bot-field">
 <input type="hidden" name="form-name" value="tisk-form">
+<input type="hidden" name="hiddenOrder" id="hiddenOrder">
 <p style="display:none"><input name="bot-field"></p>
 
 <label>Jméno:</label>
@@ -77,6 +78,7 @@ Celková cena: <span id="totalPrice">0</span> Kč
 
 <div id="confirmation">
 <h2>Objednávka byla odeslána</h2>
+<p>Číslo objednávky: <span id="orderNumber"></span></p>
 <div id="orderSummary"></div>
 <h3>Údaje pro platbu</h3>
 <p>IBAN: CZ920300000000032726377<br>
@@ -141,29 +143,43 @@ form.addEventListener('submit', async e=>{
     if(!valid) { alert("Vyplňte všechna pole objednávky."); return; }
 
     const vs = Math.floor(10000 + Math.random()*90000);
+    const orderNum = Math.floor(10000 + Math.random()*90000);
 
+    // Zobrazíme potvrzení
     document.getElementById('orderSummary').innerHTML = summary;
     document.getElementById('vs').innerText = vs;
     document.getElementById('payAmount').innerText = total;
+    document.getElementById('orderNumber').innerText = orderNum;
     document.getElementById('confirmation').style.display = 'block';
 
+    // QR kód ostrý a čitelný
     const qrDiv = document.getElementById('qrCode');
     qrDiv.innerHTML = '';
     const iban = "CZ920300000000032726377";
     const spd = `SPD*1.0*ACC:${iban}*AM:${total.toFixed(2)}*CC:CZK*MSG:Tisk fotografií*X-VS:${vs}`;
-    new QRCode(qrDiv, {text:spd,width:128,height:128});
+    new QRCode(qrDiv, {
+        text: spd,
+        width: 256,
+        height: 256,
+        colorDark:"#000000",
+        colorLight:"#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
 
+    // Zároveň připravíme skryté pole pro Netlify
+    document.getElementById('hiddenOrder').value = `Objednávka č.${orderNum}\n${summary.replace(/<br>/g,"\n")}`;
+
+    // Disable tlačítko
     document.getElementById('submitBtn').disabled = true;
     document.getElementById('submitBtn').innerText = 'Odesláno…';
 
-    // AJAX POST do Netlify
+    // AJAX POST Netlify
     const formData = new FormData(form);
-    formData.append('objednavka', summary.replace(/<br>/g,"\n"));
     formData.append('reply-to', document.getElementById('email').value);
 
     fetch('/', { method:'POST', body: formData })
     .then(()=>console.log('Formulář odeslán na Netlify'))
-    .catch(err=>alert('Chyba při odeslání formuláře: ' + err));
+    .catch(err=>alert('Chyba při odeslání formuláře: '+err));
 });
 </script>
 
