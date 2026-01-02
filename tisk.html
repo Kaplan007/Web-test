@@ -45,14 +45,13 @@ button.small { padding:6px 12px; font-size:13px; }
             <li><a href="sluzby.html">Služby</a></li>
             <li><a href="tisk.html">Tisk</a></li>
             <li><a href="kontakt.html">Kontakt</a></li>
-
         </ul>
     </aside>
 
 <main class="content">
 <h1>Objednávka tisku fotografií</h1>
 
-<form name="tisk-form" data-netlify="true" netlify-honeypot="bot-field">
+<form name="tisk-form" data-netlify="true" netlify-honeypot="bot-field" id="orderForm">
 <input type="hidden" name="form-name" value="tisk-form">
 <input type="hidden" name="hiddenOrder" id="hiddenOrder">
 <p style="display:none"><input name="bot-field"></p>
@@ -137,7 +136,7 @@ function calculate() {
 
 addRow();
 
-const form = document.querySelector('form[name="tisk-form"]');
+const form = document.getElementById('orderForm');
 form.addEventListener('submit', async e=>{
     e.preventDefault();
 
@@ -160,26 +159,31 @@ form.addEventListener('submit', async e=>{
     const vs = Math.floor(10000 + Math.random()*90000);
     const orderNum = Math.floor(10000 + Math.random()*90000);
 
+    // skrytí formuláře a zobrazení potvrzení
+    form.style.display = 'none';
+    const confirmation = document.getElementById('confirmation');
+    confirmation.style.display = 'block';
     document.getElementById('orderSummary').innerHTML = summary;
     document.getElementById('vs').innerText = vs;
     document.getElementById('payAmount').innerText = total;
     document.getElementById('orderNumber').innerText = orderNum;
-    document.getElementById('confirmation').style.display = 'block';
 
-    // QR kód pro české banky – IBAN CZ + číslo účtu bez lomítka
-    const qrDiv = document.getElementById('qrCode');
-    qrDiv.innerHTML = '';
-    const iban = "CZ3327263770300";
-    const spd = `SPD*1.0*ACC:${iban}*AM:${total.toFixed(2)}*CC:CZK*MSG:Tisk fotografií*X-VS:${vs}`;
-    new QRCode(qrDiv, {
-        text: spd,
-        width: 300,
-        height: 300,
-        colorDark:"#000000",
-        colorLight:"#ffffff",
-        correctLevel: QRCode.CorrectLevel.H,
-        useSVG: true
-    });
+   // QR kód pro české banky – IBAN CZ + číslo účtu bez lomítka
+const qrDiv = document.getElementById('qrCode');
+qrDiv.innerHTML = ''; // vyčistit před generováním
+qrDiv.style.display = 'block'; // ujistit se, že je viditelné
+
+const spd = `SPD*1.0*ACC:CZ3327263770300*AM:${total.toFixed(2)}*CC:CZK*MSG:Tisk fotografií*X-VS:${vs}`;
+new QRCode(qrDiv, {
+    text: spd,
+    width: 300,
+    height: 300,
+    colorDark:"#000000",
+    colorLight:"#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+});
+
+
 
     // Skryté pole pro Netlify – kompletní objednávka + cena + číslo objednávky
     document.getElementById('hiddenOrder').value =
