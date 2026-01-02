@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Objednávka tisku | Fotograf</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<style>
+table { width:100%; border-collapse: collapse; margin-top:20px; }
+th, td { border-bottom:1px solid #ddd; padding:10px; text-align:left; }
+th { background:#f5f5f5; }
+button.small { padding:6px 12px; font-size:13px; }
+.total { margin-top:20px; font-size:20px; font-weight:600; }
+.success-message { display:none; margin-top:20px; padding:15px; background:#d4edda; color:#155724; border-radius:6px; font-weight:600; }
+#confirmation { display:none; margin-top:20px; padding:15px; border:1px solid #ccc; border-radius:6px; background:#f9f9f9; }
+#qrCode { margin-top:15px; text-align:center; }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+</head>
+<body>
+<div class="container">
+
+<aside class="sidebar">
+    <img src="img/logo.webp" alt="Logo" style="width:50%;">
+    <ul>
+        <li><a href="omne.html">O mně</a></li>
+        <li><a href="fotogalerie.html">Fotogalerie</a></li>
+        <li><a href="sluzby.html">Služby</a></li>
+        <li><a href="tisk.html">Tisk</a></li>
+    </ul>
+</aside>
+
+<main class="content">
+<h1>Objednávka tisku fotografií</h1>
+
+<form name="tisk-form" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+<input type="hidden" name="form-name" value="tisk-form">
+<p style="display:none"><input name="bot-field"></p>
+
+<label>Jméno:</label>
+<input type="text" name="jmeno" required>
+
+<label>Email:</label>
+<input type="email" id="email" name="email" required>
+
+<label>Telefon:</label>
+<input type="tel" name="telefon" required>
+
+<h2>Objednávka</h2>
+<table id="orderTable">
+<thead>
+<tr>
+<th>Číslo fotky</th>
+<th>Formát</th>
+<th>Počet</th>
+<th></th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<button type="button" onclick="addRow()">+ Přidat položku</button>
+
+<div class="total">
+Celková cena: <span id="totalPrice">0</span> Kč
+</div>
+
+<label>Poznámka:</label>
+<textarea name="poznamka"></textarea>
+
+<button type="submit" id="submitBtn">Odeslat objednávku</button>
+</form>
+
+<div id="confirmation">
+<h2>Objednávka byla odeslána</h2>
+<div id="orderSummary"></div>
+<h3>Údaje pro platbu</h3>
+<p>IBAN: CZ920300000000032726377<br>
+Variabilní symbol (VS): <span id="vs"></span><br>
+Částka: <span id="payAmount"></span> Kč</p>
+<div id="qrCode"></div>
+</div>
+
+<script>
+const prices = {
+    "10x15 lesk 10 Kč":10,
+    "10x15 polomat 10 Kč":10,
+    "13x18 lesk 15 Kč":15,
+    "13x18 polomat 15 Kč":15,
+    "A4 lesk 45 Kč":45,
+    "A4 polomat 45 Kč":45
+};
+
+function addRow() {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td><input type="text" class="num" required></td>
+        <td><select class="format">${Object.keys(prices).map(p=>`<option>${p}</option>`).join('')}</select></td>
+        <td><select class="count">${[...Array(10)].map((_,i)=>`<option>${i+1}</option>`).join('')}</select></td>
+        <td><button type="button" class="small" onclick="this.closest('tr').remove(); calculate()">✕</button></td>
+    `;
+    document.querySelector('#orderTable tbody').appendChild(tr);
+    tr.querySelectorAll('input,select').forEach(el=>el.addEventListener('change', calculate));
+    calculate();
+}
+
+function calculate() {
+    let total = 0;
+    document.querySelectorAll('#orderTable tbody tr').forEach(row=>{
+        const format = row.querySelector('.format').value;
+        const count = parseInt(row.querySelector('.count').value);
+        total += prices[format]*count;
+    });
+    document.getElementById('totalPrice').innerText = total;
+}
+
+addRow(); // první řádek
+
+const form = document.querySelector('form[name="tisk-form"]');
+form.addEventListener('submit', e=>{
+    e.preventDefault();
+
+    let summary = '';
+    let valid = true;
+    let total = 0;
+
+    document.querySelectorAll('#orderTable tbody tr').forEach((row,i)=>{
+        const num = row.querySelector('.num').value.trim();
+        const format = row.querySelector('.format').value;
+        const count = parseInt(row.querySelector('.count').value);
+        if(!num) valid=false;
+        const price = prices[format]*count;
+        total += price;
+        summary += `${i+1}. Foto ${num}, ${format}, ks ${count}, cena: ${price} Kč<br>`;
+    });
+
+    if(!valid) { alert("Vyplňte všechna pole objednávky."); return; }
+
+    // vypočítaná cena a náhodný VS
+    const vs = Math.floor(10000 + Math.random()*90000);
+    document.getElementById('vs').innerText = vs;
+    document.getElementById('payAmount').innerText = total;
+
+    // zobrazíme přehled
+    document.getElementById('orderSummary').innerHTML = summary;
+    document.getElementById('confirmation').style.display = 'block';
+
+    // QR kód SPD
+    const qrDiv = document.getElementById('qrCode');
+    qrDiv.innerHTML='';
+    const iban="CZ920300000000032726377";
+    const spd=`SPD*1.0*ACC:${iban}*AM:${total.toFixed(2)}*CC:CZK*MSG:Tisk fotografií*X-VS:${vs}`;
+    new QRCode(qrDiv,{text:spd,width:128,height:128});
+
+    // vypneme tlačítko
+    document.getElementById('submitBtn').disabled=true;
+    document.getElementById('submitBtn').innerText='Odesláno…';
+
+    // Netlify Form
+    const orderField = document.createElement('input');
+    orderField.type='hidden';
+    orderField.name='objednavka';
+    orderField.value = summary.replace(/<br>/g,"\n");
+    form.appendChild(orderField);
+
+    form.submit(); // odešleme Netlify
+});
+</script>
+
+</main>
+</div>
+</body>
+</html>
