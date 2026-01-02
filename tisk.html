@@ -16,10 +16,9 @@ button.small { padding:6px 12px; font-size:13px; }
 .total { margin-top:20px; font-size:20px; font-weight:600; }
 .success-message { display:none; margin-top:20px; padding:15px; background:#d4edda; color:#155724; border-radius:6px; font-weight:600; }
 button:disabled { opacity:.6; cursor:not-allowed; }
-#pdfPreview { display:none; }
+#pdfPreview { visibility:hidden; position:absolute; left:-9999px; width:210mm; padding:20px; font-family:Montserrat; }
 </style>
 
-<!-- knihovny pro PDF a QR -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
@@ -82,11 +81,10 @@ Celková cena: <span id="totalPrice">0</span> Kč
 <input type="hidden" name="reply-to" id="reply-to">
 
 <button type="submit" id="submitBtn">Odeslat objednávku</button>
-<button type="button" id="downloadPDFBtn" onclick="downloadPDF()">Stáhnout PDF</button>
 </form>
 
 <!-- skrytý div pro PDF -->
-<div id="pdfPreview" style="width:210mm; padding:20px; font-family:Montserrat;">
+<div id="pdfPreview">
     <div style="text-align:center;"><img src="img/logo.webp" style="width:120px;"></div>
     <h2>Objednávka tisku fotografií</h2>
     <div id="pdfOrderDetails"></div>
@@ -104,7 +102,6 @@ const prices = {
     "A4 polomat 45 Kč": 45
 };
 
-// přidání řádku
 function addRow() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -128,8 +125,7 @@ function calculate() {
     document.getElementById('totalPrice').innerText = total;
 }
 
-// první řádek
-addRow();
+addRow(); // první řádek
 
 const form = document.querySelector('form[name="tisk-form"]');
 form.addEventListener('submit', e=>{
@@ -146,6 +142,8 @@ form.addEventListener('submit', e=>{
 
     if(!valid) { alert("Vyplňte všechna pole objednávky."); return; }
 
+    const vs = Math.floor(10000 + Math.random() * 90000); // náhodný 5-ciferný VS
+
     document.getElementById('orderSummary').value = summary;
     document.getElementById('reply-to').value = document.getElementById('email').value;
 
@@ -154,26 +152,19 @@ form.addEventListener('submit', e=>{
 
     form.submit();
     document.getElementById('successMessage').style.display='block';
-});
 
-// PDF + QR kód
-function downloadPDF() {
+    // Generování PDF
     const detailsDiv = document.getElementById('pdfOrderDetails');
     detailsDiv.innerHTML = '';
     let total = 0;
-    let orderText = '';
-    const vs = Math.floor(10000 + Math.random() * 90000); // náhodný 5-ciferný VS
-
     document.querySelectorAll('#orderTable tbody tr').forEach((row,i)=>{
         const num = row.querySelector('.num').value.trim();
         const format = row.querySelector('.format').value;
         const count = parseInt(row.querySelector('.count').value);
         const price = prices[format] * count;
         total += price;
-        orderText += `${i+1}. Foto ${num}, ${format}, ks ${count}, cena: ${price} Kč<br>`;
+        detailsDiv.innerHTML += `${i+1}. Foto ${num}, ${format}, ks ${count}, cena: ${price} Kč<br>`;
     });
-
-    detailsDiv.innerHTML = orderText;
     document.getElementById('pdfTotal').innerText = total;
 
     // QR kód
@@ -187,10 +178,20 @@ function downloadPDF() {
 
     // generování PDF
     const element = document.getElementById('pdfPreview');
-    element.style.display='block';
+    element.style.visibility='visible';
     html2pdf().from(element).set({margin:10, filename:`objednavka_${vs}.pdf`, html2canvas:{scale:2}}).save();
-    element.style.display='none';
-}
+    element.style.visibility='hidden';
+
+    // volání serverless funkce pro email s PDF (ukázkový POST)
+    // musíš vytvořit serverless funkci v Netlify: /netlify/functions/send-pdf.js
+    /*
+    const formData = new FormData();
+    formData.append('pdfContent', element.innerHTML); // nebo base64
+    formData.append('email', document.getElementById('email').value);
+    fetch('/.netlify/functions/send-pdf', { method:'POST', body: formData });
+    */
+});
 </script>
+
 </body>
 </html>
