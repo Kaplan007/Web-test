@@ -1,117 +1,196 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Objednávka tisku | Fotograf</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Objednávka tisku | Fotograf</title>
 
-    <style>
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        .success-message {
-            display: none;
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #d4edda;
-            color: #155724;
-            border-radius: 6px;
-            font-weight: 600;
-        }
-    </style>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<style>
+table { width:100%; border-collapse: collapse; margin-top:20px; }
+th, td { border-bottom:1px solid #ddd; padding:10px; text-align:left; }
+th { background:#f5f5f5; }
+button.small { padding:6px 12px; font-size:13px; }
+.total { margin-top:20px; font-size:20px; font-weight:600; }
+.success-message { display:none; margin-top:20px; padding:15px; background:#d4edda; color:#155724; border-radius:6px; font-weight:600; }
+button:disabled { opacity:.6; cursor:not-allowed; }
+#pdfPreview { display:none; }
+</style>
+
+<!-- knihovny pro PDF a QR -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 </head>
 <body>
-
 <div class="container">
 
-    <aside class="sidebar">
-        <div class="logo">
-              <img src="img/logo.webp" alt="Logo" style="width: 50%;">
-        </div>
-        <nav>
-            <ul>
-                <li><a href="omne.html">O mně</a></li>
-                <li><a href="fotogalerie.html">Fotogalerie</a></li>
-                <li><a href="sluzby.html">Služby</a></li>
-                <li><a href="tisk.html">Tisk</a></li>
-            </ul>
-        </nav>
-    </aside>
+<aside class="sidebar">
+    <img src="img/logo.webp" alt="Logo" style="width:50%;">
+    <ul>
+        <li><a href="omne.html">O mně</a></li>
+        <li><a href="fotogalerie.html">Fotogalerie</a></li>
+        <li><a href="sluzby.html">Služby</a></li>
+        <li><a href="tisk.html">Tisk</a></li>
+    </ul>
+</aside>
 
-    <main class="content">
-        <h1>Objednávka tisku fotografií</h1>
-        <p>Vyplňte formulář a já vám připravím objednávku. Po odeslání obdržíte potvrzení e-mailem.</p>
+<main class="content">
+<h1>Objednávka tisku fotografií</h1>
 
-        <!-- SUCCESS MESSAGE -->
-        <div id="successMessage" class="success-message">
-            Objednávka byla odeslána.
-        </div>
+<div class="success-message" id="successMessage">Objednávka byla odeslána.</div>
 
-        <!-- FORMULÁŘ -->
-        <form name="tisk-form" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+<form name="tisk-form" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+<input type="hidden" name="form-name" value="tisk-form">
+<p style="display:none"><input name="bot-field"></p>
 
-            <input type="hidden" name="form-name" value="tisk-form">
-            <p style="display:none">
-                <label>Don’t fill this out if you're human: <input name="bot-field"></label>
-            </p>
+<label>Jméno:</label>
+<input type="text" name="jmeno" required>
 
-            <label for="jmeno">Jméno:</label>
-            <input type="text" id="jmeno" name="jmeno" required>
+<label>Email:</label>
+<input type="email" id="email" name="email" required>
 
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
+<label>Telefon:</label>
+<input type="tel" name="telefon" required>
 
-            <label for="telefon">Telefonní číslo:</label>
-            <input type="tel" id="telefon" name="telefon">
+<h2>Objednávka</h2>
 
-            <label for="cisla">Čísla fotografií ze Zoneramy:</label>
-            <textarea id="cisla" name="cisla" placeholder="např. 1, 3, 7" required></textarea>
+<table id="orderTable">
+<thead>
+<tr>
+<th>Číslo fotky</th>
+<th>Formát</th>
+<th>Počet</th>
+<th></th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
 
-            <label for="format">Formát:</label>
-            <select id="format" name="format" required>
-                <option value="">Vyberte formát</option>
-                <option value="10x15 lesk 10 Kč">10x15 lesk 10 Kč</option>
-                <option value="10x15 polomat 10 Kč">10x15 polomat 10 Kč</option>
-                <option value="13x18 lesk 15 Kč">13x18 lesk 15 Kč</option>
-                <option value="13x18 polomat 15 Kč">13x18 polomat 15 Kč</option>
-                <option value="A4 lesk 45 Kč">A4 lesk 45 Kč</option>
-                <option value="A4 polomat 45 Kč">A4 polomat 45 Kč</option>
-            </select>
+<button type="button" onclick="addRow()">+ Přidat položku</button>
 
-            <label for="poznamka">Poznámka:</label>
-            <textarea id="poznamka" name="poznamka" placeholder="Např. rychlý tisk, dárkový obal"></textarea>
-
-            <input type="hidden" name="reply-to" id="reply-to">
-
-            <button type="submit" id="submitButton">Odeslat objednávku</button>
-        </form>
-
-        <script>
-            const form = document.querySelector('form[name="tisk-form"]');
-            const successMessage = document.getElementById('successMessage');
-            const submitButton = document.getElementById('submitButton');
-
-            form.addEventListener('submit', function(e){
-                // vložíme email klienta pro potvrzení
-                document.getElementById('reply-to').value = document.getElementById('email').value;
-
-                // UX hláška při submitu
-                submitButton.disabled = true;
-                submitButton.innerText = 'Odesílám...';
-
-                // Počkej 0.5s, aby uživatel viděl změnu a Netlify zpracovalo submit
-                setTimeout(() => {
-                    successMessage.style.display = 'block';
-                    submitButton.innerText = 'Odesláno';
-                }, 500);
-            });
-        </script>
-
-    </main>
+<div class="total">
+Celková cena: <span id="totalPrice">0</span> Kč
 </div>
 
+<label>Poznámka:</label>
+<textarea name="poznamka"></textarea>
+
+<textarea name="objednavka" id="orderSummary" hidden></textarea>
+<input type="hidden" name="reply-to" id="reply-to">
+
+<button type="submit" id="submitBtn">Odeslat objednávku</button>
+<button type="button" id="downloadPDFBtn" onclick="downloadPDF()">Stáhnout PDF</button>
+</form>
+
+<!-- skrytý div pro PDF -->
+<div id="pdfPreview" style="width:210mm; padding:20px; font-family:Montserrat;">
+    <div style="text-align:center;"><img src="img/logo.webp" style="width:120px;"></div>
+    <h2>Objednávka tisku fotografií</h2>
+    <div id="pdfOrderDetails"></div>
+    <div class="total">Celková cena: <span id="pdfTotal">0</span> Kč</div>
+    <div id="pdfQR" style="margin-top:20px; text-align:center;"></div>
+</div>
+
+<script>
+const prices = {
+    "10x15 lesk 10 Kč": 10,
+    "10x15 polomat 10 Kč": 10,
+    "13x18 lesk 15 Kč": 15,
+    "13x18 polomat 15 Kč": 15,
+    "A4 lesk 45 Kč": 45,
+    "A4 polomat 45 Kč": 45
+};
+
+// přidání řádku
+function addRow() {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td><input type="text" class="num" required></td>
+        <td><select class="format">${Object.keys(prices).map(p=>`<option>${p}</option>`).join('')}</select></td>
+        <td><select class="count">${[...Array(10)].map((_,i)=>`<option>${i+1}</option>`).join('')}</select></td>
+        <td><button type="button" class="small" onclick="this.closest('tr').remove(); calculate()">✕</button></td>
+    `;
+    document.querySelector('#orderTable tbody').appendChild(tr);
+    tr.querySelectorAll('input,select').forEach(el=>el.addEventListener('change', calculate));
+    calculate();
+}
+
+function calculate() {
+    let total = 0;
+    document.querySelectorAll('#orderTable tbody tr').forEach(row=>{
+        const format = row.querySelector('.format').value;
+        const count = parseInt(row.querySelector('.count').value);
+        total += prices[format] * count;
+    });
+    document.getElementById('totalPrice').innerText = total;
+}
+
+// první řádek
+addRow();
+
+const form = document.querySelector('form[name="tisk-form"]');
+form.addEventListener('submit', e=>{
+    e.preventDefault();
+
+    let summary = '';
+    let valid = true;
+
+    document.querySelectorAll('#orderTable tbody tr').forEach((row,i)=>{
+        const num = row.querySelector('.num').value.trim();
+        if(!num) valid=false;
+        summary += `${i+1}. Foto ${num}, ${row.querySelector('.format').value}, ks ${row.querySelector('.count').value}\n`;
+    });
+
+    if(!valid) { alert("Vyplňte všechna pole objednávky."); return; }
+
+    document.getElementById('orderSummary').value = summary;
+    document.getElementById('reply-to').value = document.getElementById('email').value;
+
+    document.getElementById('submitBtn').disabled=true;
+    document.getElementById('submitBtn').innerText='Odesílám…';
+
+    form.submit();
+    document.getElementById('successMessage').style.display='block';
+});
+
+// PDF + QR kód
+function downloadPDF() {
+    const detailsDiv = document.getElementById('pdfOrderDetails');
+    detailsDiv.innerHTML = '';
+    let total = 0;
+    let orderText = '';
+    const vs = Math.floor(10000 + Math.random() * 90000); // náhodný 5-ciferný VS
+
+    document.querySelectorAll('#orderTable tbody tr').forEach((row,i)=>{
+        const num = row.querySelector('.num').value.trim();
+        const format = row.querySelector('.format').value;
+        const count = parseInt(row.querySelector('.count').value);
+        const price = prices[format] * count;
+        total += price;
+        orderText += `${i+1}. Foto ${num}, ${format}, ks ${count}, cena: ${price} Kč<br>`;
+    });
+
+    detailsDiv.innerHTML = orderText;
+    document.getElementById('pdfTotal').innerText = total;
+
+    // QR kód
+    const qrDiv = document.getElementById('pdfQR');
+    qrDiv.innerHTML = '';
+    const iban = "CZ920300000000032726377";
+    const amount = total.toFixed(2);
+    const msg = "Tisk fotografií";
+    const spd = `SPD*1.0*ACC:${iban}*AM:${amount}*CC:CZK*MSG:${msg}*X-VS:${vs}`;
+    new QRCode(qrDiv, { text: spd, width:128, height:128 });
+
+    // generování PDF
+    const element = document.getElementById('pdfPreview');
+    element.style.display='block';
+    html2pdf().from(element).set({margin:10, filename:`objednavka_${vs}.pdf`, html2canvas:{scale:2}}).save();
+    element.style.display='none';
+}
+</script>
 </body>
 </html>
