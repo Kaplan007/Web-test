@@ -170,17 +170,21 @@ form.addEventListener('submit', async e=>{
 
    // QR kód pro české banky – IBAN CZ + číslo účtu bez lomítka
 const qrDiv = document.getElementById('qrCode');
-qrDiv.innerHTML = ''; // vyčistit před generováním
-qrDiv.style.display = 'block'; // ujistit se, že je viditelné
+qrDiv.innerHTML = '';            // vyčistit div
+qrDiv.style.display = 'block';   // ujistit se, že je viditelné
+qrDiv.style.width = '300px';     // explicitní rozměr
+qrDiv.style.height = '300px';
 
 const spd = `SPD*1.0*ACC:CZ3327263770300*AM:${total.toFixed(2)}*CC:CZK*MSG:Tisk fotografií*X-VS:${vs}`;
+
 new QRCode(qrDiv, {
     text: spd,
     width: 300,
     height: 300,
     colorDark:"#000000",
     colorLight:"#ffffff",
-    correctLevel: QRCode.CorrectLevel.H
+    correctLevel: QRCode.CorrectLevel.H,
+    useSVG: false // canvas je spolehlivější při display:none → block
 });
 
 
