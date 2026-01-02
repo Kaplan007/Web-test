@@ -18,6 +18,7 @@ button.small { padding:6px 12px; font-size:13px; }
 #qrCode { margin-top:15px; text-align:center; }
 </style>
 
+<!-- QRCode SVG verze -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 </head>
@@ -97,6 +98,7 @@ const prices = {
     "A4 polomat 45 Kč":45
 };
 
+// Přidání řádku
 function addRow() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -110,6 +112,7 @@ function addRow() {
     calculate();
 }
 
+// Automatický výpočet ceny
 function calculate() {
     let total = 0;
     document.querySelectorAll('#orderTable tbody tr').forEach(row=>{
@@ -152,7 +155,7 @@ form.addEventListener('submit', async e=>{
     document.getElementById('orderNumber').innerText = orderNum;
     document.getElementById('confirmation').style.display = 'block';
 
-    // QR kód ostrý a čitelný
+    // QR kód jako SVG, čtvercový a čitelný
     const qrDiv = document.getElementById('qrCode');
     qrDiv.innerHTML = '';
     const iban = "CZ920300000000032726377";
@@ -163,13 +166,14 @@ form.addEventListener('submit', async e=>{
         height: 256,
         colorDark:"#000000",
         colorLight:"#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
+        correctLevel: QRCode.CorrectLevel.H,
+        useSVG: true
     });
 
-    // Zároveň připravíme skryté pole pro Netlify
-    document.getElementById('hiddenOrder').value = `Objednávka č.${orderNum}\n${summary.replace(/<br>/g,"\n")}`;
+    // Skryté pole pro Netlify – obsahuje objednávku + celkovou cenu + číslo objednávky
+    document.getElementById('hiddenOrder').value = `Objednávka č.${orderNum}\n${summary.replace(/<br>/g,"\n")}Celková cena: ${total} Kč`;
 
-    // Disable tlačítko
+    // Zablokování tlačítka
     document.getElementById('submitBtn').disabled = true;
     document.getElementById('submitBtn').innerText = 'Odesláno…';
 
