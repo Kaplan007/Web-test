@@ -9,25 +9,18 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
-/* Tabulka objednávky */
 table { width:100%; border-collapse: collapse; margin-top:20px; }
 th, td { border-bottom:1px solid #ddd; padding:10px; text-align:left; }
 th { background:#f5f5f5; }
 button.small { padding:6px 12px; font-size:13px; }
 .total { margin-top:20px; font-size:20px; font-weight:600; }
-
-/* Potvrzení objednávky */
 #confirmation { display:none; margin-top:20px; padding:15px; border:1px solid #ccc; border-radius:6px; background:#f9f9f9; }
 #qrCode { margin-top:15px; text-align:center; }
-
-/* ⚠️ QR kód nemá žádné zaoblení, aby byl čitelný bankovními aplikacemi */
-#qrCode img, #qrCode svg {
-    border-radius: 0 !important;
-}
+/* QR kód bez zaoblení */
+#qrCode img, #qrCode svg { border-radius:0 !important; display:block; margin:auto; }
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
 </head>
 <body>
 <div class="container">
@@ -89,9 +82,9 @@ Celková cena: <span id="totalPrice">0</span> Kč
 <p>Číslo objednávky: <span id="orderNumber"></span></p>
 <div id="orderSummary"></div>
 <h3>Údaje pro platbu</h3>
-<p>IBAN: CZ920300000000032726377<br>
+<p>Číslo účtu: 332726377/0300<br>
 Variabilní symbol (VS): <span id="vs"></span><br>
-Částka: <span id="payAmount"></span> Kč</p>
+Částka k úhradě: <span id="payAmount"></span> Kč</p>
 <div id="qrCode"></div>
 </div>
 
@@ -162,15 +155,15 @@ form.addEventListener('submit', async e=>{
     document.getElementById('orderNumber').innerText = orderNum;
     document.getElementById('confirmation').style.display = 'block';
 
-    // QR kód jako SVG, čtvercový
+    // QR kód pro platbu (SPD), čistý text, SVG
     const qrDiv = document.getElementById('qrCode');
     qrDiv.innerHTML = '';
     const iban = "CZ920300000000032726377";
     const spd = `SPD*1.0*ACC:${iban}*AM:${total.toFixed(2)}*CC:CZK*MSG:Tisk fotografií*X-VS:${vs}`;
     new QRCode(qrDiv, {
         text: spd,
-        width: 256,
-        height: 256,
+        width: 300,
+        height: 300,
         colorDark:"#000000",
         colorLight:"#ffffff",
         correctLevel: QRCode.CorrectLevel.H,
