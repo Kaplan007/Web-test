@@ -127,13 +127,12 @@ button.small { padding:6px 12px; font-size:13px; }
 <label>Poznámka:</label>
 <textarea name="poznamka"></textarea>
 
-<div class="gdpr-consent">
- 
-<div style="font-size: 14px; display: flex; align-items: center; gap: 5px;">
-  <input type="checkbox" name="gdpr_consent" required style="margin:0; padding:0; width:auto; height:auto;">
-  <span>Souhlasím se zpracováním osobních údajů dle <a href="#gdpr-details" target="_blank">zásad ochrany osobních údajů</a>.</span>
-</div>
-<br>
+<div class="gdpr-consent" style="margin-top:15px; font-size:14px;">
+  <label style="display:flex; align-items:center; gap:5px;">
+    <input type="checkbox" name="gdpr_consent" required style="margin:0; padding:0; width:auto; height:auto;">
+    Souhlasím se zpracováním osobních údajů dle 
+    <a href="#gdpr-details" target="_blank" style="margin-left:3px;">zásad ochrany osobních údajů</a>.
+  </label>
 
   <div id="gdpr-details" style="display:none; margin-top:10px; border:1px solid #ccc; padding:10px;">
     <h3>Zásady ochrany osobních údajů – ŠapiFOTO</h3>
@@ -145,17 +144,21 @@ button.small { padding:6px 12px; font-size:13px; }
       <li>Poskytnutí údajů je <strong>dobrovolné</strong>, avšak nezbytné pro vyřízení objednávky.</li>
       <li>Máte právo kdykoliv požádat o přístup k vašim údajům, jejich opravu nebo vymazání.</li>
     </ul>
-      </div>
+  </div>
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', () => {
   const link = document.querySelector('.gdpr-consent a');
   const details = document.getElementById('gdpr-details');
-  link.addEventListener('click', function(e) {
+  link.addEventListener('click', e => {
     e.preventDefault();
     details.style.display = details.style.display === 'none' ? 'block' : 'none';
   });
+});
 </script>
+
+
 
 
 
