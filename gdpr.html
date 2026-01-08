@@ -1,0 +1,33 @@
+<div class="gdpr-consent">
+  <p>
+    Odesláním objednávky souhlasíte se zpracováním vašich osobních údajů pro účely vyřízení objednávky. 
+    <a href="#gdpr-details" target="_blank">Podrobnosti zde</a>.
+  </p>
+
+  <label>
+    <input type="checkbox" name="gdpr_consent" required>
+    Souhlasím se zpracováním osobních údajů dle zásad ochrany osobních údajů.
+  </label>
+
+  <div id="gdpr-details" style="display:none; margin-top:10px; border:1px solid #ccc; padding:10px;">
+    <h3>Zásady ochrany osobních údajů – ŠapiFOTO</h3>
+    <p>Správcem vašich osobních údajů je <strong>Petr Šapovalov, firma ŠapiFOTO, IČ 19942826</strong>.</p>
+    <p>Vaše osobní údaje (jméno, telefonní číslo, e-mail) zpracovávám <strong>výhradně za účelem vyřízení a doručení vaší objednávky</strong>.</p>
+    <ul>
+      <li>Vaše údaje <strong>nebudou uchovávány déle než je nutné</strong> pro vyřízení objednávky.</li>
+      <li>Vaše údaje <strong>nebudou sdíleny s třetími stranami</strong> ani použity pro marketingové účely.</li>
+      <li>Poskytnutí údajů je <strong>dobrovolné</strong>, avšak nezbytné pro vyřízení objednávky.</li>
+      <li>Máte právo kdykoliv požádat o přístup k vašim údajům, jejich opravu nebo vymazání.</li>
+    </ul>
+    <p>Pro více informací mě můžete kontaktovat na e-mailu nebo telefonu uvedeném v objednávkovém formuláři.</p>
+  </div>
+</div>
+
+<script>
+  const link = document.querySelector('.gdpr-consent a');
+  const details = document.getElementById('gdpr-details');
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    details.style.display = details.style.display === 'none' ? 'block' : 'none';
+  });
+</script>

@@ -16,7 +16,7 @@ button.small { padding:6px 12px; font-size:13px; }
 .total { margin-top:20px; font-size:20px; font-weight:600; }
 #confirmation { display:none; margin-top:20px; padding:15px; border:1px solid #ccc; border-radius:6px; background:#f9f9f9; }
 #qrCode { margin-top:15px; text-align:center; }
-#qrCode img, #qrCode svg { border-radius:0 !important; display:block; margin:auto; }
+#qrCode canvas { display:block; margin:auto; }
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -24,38 +24,74 @@ button.small { padding:6px 12px; font-size:13px; }
 <body>
 <div class="container">
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="logo">
-            <img src="img/logo.webp" alt="Logo" style="width: 50%;">
-        </div>
+    <!-- SIDEBAR / TOPBAR -->
+<aside class="sidebar">
+    <div class="logo">
+        <a href="index.html"><img src="img/logo.webp" alt="Logo"></a>
+    </div>
 
+    <!-- Desktop menu -->
+    <ul>
+        <li class="home"><a href="index.html"><svg viewBox="0 0 24 24"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></svg></a></li>
+        <li><a href="omne.html">O mně</a></li>
+        <li><a href="fotogalerie.html">Fotogalerie</a></li>
+        <li><a href="sluzby.html">Služby</a></li>
+        <li><a href="tisk.html">Tisk</a></li>
+        <li><a href="kontakt.html">Kontakt</a></li>
+    </ul>
+
+    <!-- Hamburger pro mobil -->
+    <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+</aside>
+
+
+    <!-- Mobilní menu -->
+    <nav class="mobile-menu" id="mobileMenu">
         <ul>
-            <!-- HOME / ÚVOD -->
-            <li class="home">
-                <a href="index.html" aria-label="Úvod">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/>
-                    </svg>
-                </a>
-            </li>
-
+            <li><a href="index.html">Úvod</a></li>
             <li><a href="omne.html">O mně</a></li>
             <li><a href="fotogalerie.html">Fotogalerie</a></li>
             <li><a href="sluzby.html">Služby</a></li>
             <li><a href="tisk.html">Tisk</a></li>
             <li><a href="kontakt.html">Kontakt</a></li>
         </ul>
-    </aside>
+    </nav>
 
 <main class="content">
-<h1>Objednávka tisku fotografií</h1>
+<h1>Objednávka tisku fotografií DN</h1>
+<p>(V případě zájmu o tisk fotografií mimo DN mě kontaktujte.)</p>
 
 <form name="tisk-form" data-netlify="true" netlify-honeypot="bot-field" id="orderForm">
 <input type="hidden" name="form-name" value="tisk-form">
 <input type="hidden" name="hiddenOrder" id="hiddenOrder">
 <p style="display:none"><input name="bot-field"></p>
-
+<table border="1" cellpadding="5" cellspacing="0">
+  <thead>
+    <tr>
+      <th>Formát</th>
+      <th>Cena</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>10x15 cm (lesk/polomat)</td>
+      <td>10 Kč</td>
+    </tr>
+    <tr>
+      <td>13x18 cm (lesk/polomat)</td>
+      <td>15 Kč</td>
+    </tr>
+    <tr>
+      <td>A4 21x30 cm (pouze lesk)</td>
+      <td>45 Kč</td>
+    </tr>
+  </tbody>
+</table>
+<br>
 <label>Jméno:</label>
 <input type="text" name="jmeno" required>
 
@@ -65,7 +101,9 @@ button.small { padding:6px 12px; font-size:13px; }
 <label>Telefon:</label>
 <input type="tel" name="telefon" required>
 
-<h2>Objednávka</h2>
+<h2>Položky</h2>
+<p>Číslo fotografie je posledních 5 číslic z názvu souboru, který zjistíte na Zoneramě po kliknutí na ( i ).</p>
+<img src="img/6.jpg">
 <table id="orderTable">
 <thead>
 <tr>
@@ -78,37 +116,74 @@ button.small { padding:6px 12px; font-size:13px; }
 <tbody></tbody>
 </table>
 
-<button type="button" onclick="addRow()">+ Přidat položku</button>
-
+<button type="button" onclick="addRow()">+ Přidat položku</button><br>
+<p>Seznam položek:</p>
+<div id="summaryByFormat" style="margin-bottom:10px; font-weight:500;"></div>
 <div class="total">
-Celková cena: <span id="totalPrice">0</span> Kč
+  Celková cena: <span id="totalPrice">0</span> Kč
 </div>
+
 
 <label>Poznámka:</label>
 <textarea name="poznamka"></textarea>
+
+<div class="gdpr-consent">
+ 
+<div style="font-size: 14px; display: flex; align-items: center; gap: 5px;">
+  <input type="checkbox" name="gdpr_consent" required style="margin:0; padding:0; width:auto; height:auto;">
+  <span>Souhlasím se zpracováním osobních údajů dle <a href="#gdpr-details" target="_blank">zásad ochrany osobních údajů</a>.</span>
+</div>
+<br>
+
+  <div id="gdpr-details" style="display:none; margin-top:10px; border:1px solid #ccc; padding:10px;">
+    <h3>Zásady ochrany osobních údajů – ŠapiFOTO</h3>
+    <p>Správcem vašich osobních údajů je <strong>Petr Šapovalov, firma ŠapiFOTO, IČ 19942826</strong>.</p>
+    <p>Vaše osobní údaje (jméno, telefonní číslo, e-mail) zpracovávám <strong>výhradně za účelem vyřízení a doručení vaší objednávky</strong>.</p>
+    <ul>
+      <li>Vaše údaje <strong>nebudou uchovávány déle než je nutné</strong> pro vyřízení objednávky.</li>
+      <li>Vaše údaje <strong>nebudou sdíleny s třetími stranami</strong> ani použity pro marketingové účely.</li>
+      <li>Poskytnutí údajů je <strong>dobrovolné</strong>, avšak nezbytné pro vyřízení objednávky.</li>
+      <li>Máte právo kdykoliv požádat o přístup k vašim údajům, jejich opravu nebo vymazání.</li>
+    </ul>
+      </div>
+</div>
+
+<script>
+  const link = document.querySelector('.gdpr-consent a');
+  const details = document.getElementById('gdpr-details');
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    details.style.display = details.style.display === 'none' ? 'block' : 'none';
+  });
+</script>
+
+
+
 
 <button type="submit" id="submitBtn">Odeslat objednávku</button>
 </form>
 
 <div id="confirmation">
 <h2>Objednávka byla odeslána</h2>
+<p>Po zpracování objednávky Vás budu kontaktovat na uvedený email.</p>
 <p>Číslo objednávky: <span id="orderNumber"></span></p>
 <div id="orderSummary"></div>
 <h3>Údaje pro platbu</h3>
 <p>Číslo účtu: 332726377/0300<br>
 Variabilní symbol (VS): <span id="vs"></span><br>
-Částka k úhradě: <span id="payAmount"></span> Kč</p>
+Částka k úhradě: <span id="payAmount"></span> Kč<br><br>
+QR kód pro platbu naskenujte nebo uložte ihned. Nejde zobrazit zpětně.</p>
 <div id="qrCode"></div>
 </div>
 
 <script>
 const prices = {
-    "10x15 lesk 10 Kč":10,
-    "10x15 polomat 10 Kč":10,
-    "13x18 lesk 15 Kč":15,
-    "13x18 polomat 15 Kč":15,
-    "A4 lesk 45 Kč":45,
-    "A4 polomat 45 Kč":45
+    "10x15 lesk":10,
+    "10x15 polomat":10,
+    "13x18 lesk":15,
+    "13x18 polomat":15,
+    "A4 lesk":45,
+    "A4 polomat":45
 };
 
 function addRow() {
@@ -126,18 +201,36 @@ function addRow() {
 
 function calculate() {
     let total = 0;
-    document.querySelectorAll('#orderTable tbody tr').forEach(row=>{
+    const summary = {}; // objekt pro počítání podle formátu
+
+    document.querySelectorAll('#orderTable tbody tr').forEach(row => {
         const format = row.querySelector('.format').value;
         const count = parseInt(row.querySelector('.count').value);
-        total += prices[format]*count;
+        const price = prices[format] * count;
+        total += price;
+
+        if(summary[format]) {
+            summary[format].count += count;
+            summary[format].price += price;
+        } else {
+            summary[format] = { count: count, price: price };
+        }
     });
+
+    // zobrazit souhrn nad celkovou cenu
+    const summaryDiv = document.getElementById('summaryByFormat');
+    summaryDiv.innerHTML = Object.keys(summary).map(f => 
+        `${f} &nbsp; ${summary[f].count}x &nbsp; ${summary[f].price} Kč`
+    ).join('<br>');
+
+    // celková cena
     document.getElementById('totalPrice').innerText = total;
 }
 
 addRow();
 
 const form = document.getElementById('orderForm');
-form.addEventListener('submit', async e=>{
+form.addEventListener('submit', e=>{
     e.preventDefault();
 
     let summary = '';
@@ -159,39 +252,34 @@ form.addEventListener('submit', async e=>{
     const vs = Math.floor(10000 + Math.random()*90000);
     const orderNum = Math.floor(10000 + Math.random()*90000);
 
-    // skrytí formuláře a zobrazení potvrzení
     form.style.display = 'none';
     const confirmation = document.getElementById('confirmation');
     confirmation.style.display = 'block';
     document.getElementById('orderSummary').innerHTML = summary;
     document.getElementById('vs').innerText = vs;
-    document.getElementById('payAmount').innerText = total;
+    document.getElementById('payAmount').innerText = total.toFixed(2);
     document.getElementById('orderNumber').innerText = orderNum;
 
-   // QR kód pro české banky – IBAN CZ + číslo účtu bez lomítka
-const qrDiv = document.getElementById('qrCode');
-qrDiv.innerHTML = '';            // vyčistit div
-qrDiv.style.display = 'block';   // ujistit se, že je viditelné
-qrDiv.style.width = '300px';     // explicitní rozměr
-qrDiv.style.height = '300px';
+    // QR kód – správný formát pro ČNB (QR Platba)
+    const qrDiv = document.getElementById('qrCode');
+    qrDiv.innerHTML = '';
+    const iban = "CZ9203000000000332726377";
+    const amount = total.toFixed(2);
 
-const spd = `SPD*1.0*ACC:CZ3327263770300*AM:${total.toFixed(2)}*CC:CZK*MSG:Tisk fotografií*X-VS:${vs}`;
+    // Doporučeně bez diakritiky
+    const spd = `SPD*1.0*ACC:${iban}*AM:${amount}*CC:CZK*MSG:Tisk fotografii*X-VS:${vs}`;
 
-new QRCode(qrDiv, {
-    text: spd,
-    width: 300,
-    height: 300,
-    colorDark:"#000000",
-    colorLight:"#ffffff",
-    correctLevel: QRCode.CorrectLevel.H,
-    useSVG: false // canvas je spolehlivější při display:none → block
-});
+    new QRCode(qrDiv, {
+        text: spd,
+        width: 300,
+        height: 300,
+        colorDark:"#000000",
+        colorLight:"#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
 
-
-
-    // Skryté pole pro Netlify – kompletní objednávka + cena + číslo objednávky
     document.getElementById('hiddenOrder').value =
-      `Objednávka č.${orderNum}\n${summary.replace(/<br>/g,"\n")}Celková cena: ${total} Kč`;
+      `Objednávka č.${orderNum}\n${summary.replace(/<br>/g,"\n")}Celková cena: ${total.toFixed(2)} Kč`;
 
     document.getElementById('submitBtn').disabled = true;
     document.getElementById('submitBtn').innerText = 'Odesláno…';
@@ -207,5 +295,16 @@ new QRCode(qrDiv, {
 
 </main>
 </div>
+<script>
+// Hamburger menu toggle
+const hamburger = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobileMenu');
+
+hamburger.addEventListener('click', () => {
+    mobileMenu.classList.toggle('active');
+});
+</script>
+
+
 </body>
 </html>

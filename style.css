@@ -14,6 +14,11 @@ body {
     background-color: #ffffff; /* Bílé pozadí */
 }
 
+h1 {
+    color: #D48B42;
+}
+
+
 /* =========================
    LAYOUT
 ========================= */
@@ -27,7 +32,7 @@ body {
 ========================= */
 .sidebar {
     width: 240px;
-    background-color: #ffffff; /* Bílé */
+    background-color: #E8C098; 
     color: #222;
     padding: 30px 20px;
     border-right: 1px solid #e5e5e5;
@@ -35,11 +40,17 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center; /* Logo + menu centrované */
+    transition: transform 0.3s ease;
 }
 
 .sidebar .logo {
     margin-bottom: 40px;
     text-align: center;
+}
+
+.sidebar .logo img {
+    width: 120px; /* nastavíš vhodnou velikost loga na desktopu */
+    height: auto;
 }
 
 .sidebar h2 {
@@ -102,13 +113,12 @@ body {
 /* =========================
    OBSAH
 ========================= */
-/* Úvodní stránka – obrázek jako pozadí hlavní sekce */
 .intro-section {
     background-image: url('img/1.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    padding: 100px 50px;
+    padding: 0px 0px;
     color: #ffffff;
     position: relative;
     flex: 1;
@@ -140,52 +150,6 @@ body {
     flex: 1;
     padding: 50px;
     background-color: #ffffff;
-}
-
-.content h1 {
-    font-size: 34px;
-    font-weight: 600;
-    margin-bottom: 25px;
-}
-
-.content h2 {
-    font-size: 24px;
-    font-weight: 600;
-    margin-top: 40px;
-    margin-bottom: 15px;
-}
-
-.content p {
-    max-width: 800px;
-    margin-bottom: 20px;
-}
-
-/* =========================
-   OBRÁZKY
-========================= */
-.content img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    border-radius: 14px;
-}
-
-.gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 20px;
-    margin-top: 30px;
-}
-
-.gallery img {
-    border-radius: 14px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.gallery img:hover {
-    transform: scale(1.03);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.25);
 }
 
 /* =========================
@@ -229,64 +193,117 @@ button:hover {
 }
 
 /* =========================
+   HAMBURGER PRO MOBIL
+========================= */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    width: 28px;
+    height: 20px;
+    justify-content: space-between;
+}
+
+.hamburger span {
+    display: block;
+    height: 3px;
+    background: #111;
+    border-radius: 3px;
+}
+
+/* Vysouvací menu pro mobil */
+.mobile-menu {
+    position: fixed;
+    top: 60;
+    right: -240px; /* mimo obrazovku */
+    width: 240px;
+    height: calc(100% - 60px);
+    background-color: #fff;
+    box-shadow: -4px 0 8px rgba(0,0,0,0.2);
+    z-index: 1002;
+    display: flex;
+    flex-direction: column;
+    padding: 30px 20px;
+    transition: right 0.3s ease;
+}
+
+.mobile-menu.active {
+    right: 0; /* vysunuté */
+}
+
+.mobile-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.mobile-menu ul li {
+    margin: 20px 0;
+}
+
+.mobile-menu ul li a {
+    text-decoration: none;
+    color: #111;
+    font-size: 16px;
+}
+
+/* =========================
    RESPONSIVE (MOBIL)
 ========================= */
+/* Mobilní horní lišta */
+/* Sidebar / topbar pro mobil */
 @media (max-width: 800px) {
-    .container {
-        flex-direction: column;
-    }
-
     .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
         width: 100%;
-        padding: 10px 15px;
+        height: 60px;
+        padding: 0 15px;
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background-color: #ffffff;
+        flex-direction: row;       
+        
+        justify-content: space-between; /* logo vlevo, hamburger vpravo */
+        background-color: #E8C098;
         border-bottom: 1px solid #e5e5e5;
+        z-index: 1001;
+	overflow: visible;
     }
 
-    .sidebar .logo img {
-        width: 40px;
-        height: auto;
-    }
+    .sidebar .logo img { 
+	width: 40px; 
+	height: auto; 
+	display: block;
+	margin-top: 40px;
+	}
 
-    .sidebar ul {
-        display: flex;
-        flex-direction: row;
-        margin: 0;
-        padding: 0;
-        width: auto;
-        justify-content: center;
-        text-align: center;
-    }
+    .sidebar ul { display: none; } /* skryjeme desktop menu */
+    .hamburger { 
+	display: flex; 
+	 
+	}
+}
 
-    .sidebar ul li {
-        margin: 0 10px;
-    }
+#orderTable td select.count {
+    width: 100%;       /* vyplní celou buňku */
+    font-size: 14px;   /* trochu menší písmo */
+    padding: 4px 6px;  /* odsazení uvnitř selectu */
+    box-sizing: border-box; /* aby padding neovlivňoval šířku */
+}
 
-    .sidebar ul li a {
-        display: block;
-        text-align: center;
-        font-size: 14px;
-        color: #111;
-    }
 
-    .sidebar ul li a:hover {
-        color: #555;
-    }
 
-    .sidebar ul li.home svg {
-        width: 22px;
-        height: 22px;
-    }
+/* Tabulka – redukce mezer mezi buňkami */
+#orderTable {
+    border-collapse: collapse; /* již máš, pro jistotu */
+}
 
-    .content {
-        padding: 20px;
-    }
 
-    .intro-text {
-        font-size: 1.6rem;
-        padding: 20px 10px;
-    }
+
+/* Rozbalovací seznam pro formát */
+#orderTable td select.format {
+    width: 100%;          /* vyplní celou buňku */
+    font-size: 14px;      /* menší písmo */
+    padding: 4px 4px;     /* menší odsazení uvnitř selectu */
+    box-sizing: border-box;
 }
