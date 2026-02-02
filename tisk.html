@@ -164,11 +164,17 @@ function calculate(){
   document.getElementById('summaryByFormat').innerHTML=Object.keys(summary).map(f=>`${f} &nbsp; ${summary[f].count}x &nbsp; ${summary[f].price} Kč`).join('<br>');
 }
 
+// Globální funkce addRow() už máme
 addRow();
 
-const form=document.getElementById('orderForm');
+// Počet a souhrn
+function calculate(){ ... } // stejná jako předtím
+
+// Netlify-friendly submit
+const form = document.getElementById('orderForm');
 form.addEventListener('submit', ()=>{
-  // Po odeslání Netlify e-mailu zobrazíme potvrzení po malém timeoutu
+
+  // Timeout, aby Netlify e-mail stihl odejít
   setTimeout(()=>{
     let total=0, summary='', vs=Math.floor(10000+Math.random()*90000), orderNum=Math.floor(10000+Math.random()*90000);
     document.querySelectorAll('#orderTable tbody tr').forEach((row,i)=>{
@@ -180,20 +186,25 @@ form.addEventListener('submit', ()=>{
       summary+=`${i+1}. Foto ${n}, ${f}, ks ${c}, cena: ${price} Kč<br>`;
     });
 
+    // Zobraz potvrzení
     document.getElementById('orderSummary').innerHTML=summary;
     document.getElementById('vs').innerText=vs;
     document.getElementById('payAmount').innerText=total.toFixed(2);
     document.getElementById('orderNumber').innerText=orderNum;
     document.getElementById('confirmation').style.display='block';
 
+    // QR kód
     const qrDiv=document.getElementById('qrCode');
     qrDiv.innerHTML='';
     const iban="CZ9203000000000332726377";
     const spd=`SPD*1.0*ACC:${iban}*AM:${total.toFixed(2)}*CC:CZK*MSG:Tisk fotografii*X-VS:${vs}`;
     new QRCode(qrDiv,{text:spd,width:300,height:300,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
 
-    document.getElementById('hiddenOrder').value=`Objednávka č.${orderNum}\n${summary.replace(/<br>/g,"\n")}Celková cena: ${total.toFixed(2)} Kč`;
-  },500);
+    // Skrytí submit buttonu (jen vizuální)
+    document.getElementById('submitBtn').disabled=true;
+    document.getElementById('submitBtn').innerText='Odesláno…';
+
+  }, 500); // půl sekundy
 });
 
 // GDPR toggle
