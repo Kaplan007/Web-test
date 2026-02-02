@@ -129,16 +129,16 @@ QR kód:</p>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-const prices = {
+const prices={
   "10x15 lesk":10,"10x15 polomat":10,
   "13x18 lesk":15,"13x18 polomat":15,
   "A4 lesk":45,"A4 polomat":45
 };
 
-function addRow(){
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
+// Globální funkce pro onclick
+window.addRow=function(){
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
     <td><input type="text" class="num" required></td>
     <td><select class="format">${Object.keys(prices).map(f=>`<option>${f}</option>`).join('')}</select></td>
     <td><select class="count">${[...Array(10)].map((_,i)=>`<option>${i+1}</option>`).join('')}</select></td>
@@ -147,7 +147,7 @@ function addRow(){
   document.querySelector('#orderTable tbody').appendChild(tr);
   tr.querySelectorAll('input,select').forEach(el=>el.addEventListener('change', calculate));
   calculate();
-}
+};
 
 function calculate(){
   let total=0;
@@ -167,45 +167,33 @@ function calculate(){
 addRow();
 
 const form=document.getElementById('orderForm');
-form.addEventListener('submit', e=>{
-  e.preventDefault();
-  if(!form.querySelector('input[name="gdpr_consent"]').checked){
-    alert("Musíte souhlasit se zpracováním osobních údajů."); return;
-  }
+form.addEventListener('submit', ()=>{
+  // Po odeslání Netlify e-mailu zobrazíme potvrzení po malém timeoutu
+  setTimeout(()=>{
+    let total=0, summary='', vs=Math.floor(10000+Math.random()*90000), orderNum=Math.floor(10000+Math.random()*90000);
+    document.querySelectorAll('#orderTable tbody tr').forEach((row,i)=>{
+      const n=row.querySelector('.num').value.trim();
+      const f=row.querySelector('.format').value;
+      const c=parseInt(row.querySelector('.count').value);
+      const price=prices[f]*c;
+      total+=price;
+      summary+=`${i+1}. Foto ${n}, ${f}, ks ${c}, cena: ${price} Kč<br>`;
+    });
 
-  let valid=true,total=0,summary='';
-  document.querySelectorAll('#orderTable tbody tr').forEach((row,i)=>{
-    const n=row.querySelector('.num').value.trim();
-    const f=row.querySelector('.format').value;
-    const c=parseInt(row.querySelector('.count').value);
-    if(!n) valid=false;
-    const price=prices[f]*c;
-    total+=price;
-    summary+=`${i+1}. Foto ${n}, ${f}, ks ${c}, cena: ${price} Kč<br>`;
-  });
-  if(!valid){ alert("Vyplňte všechna pole objednávky."); return; }
+    document.getElementById('orderSummary').innerHTML=summary;
+    document.getElementById('vs').innerText=vs;
+    document.getElementById('payAmount').innerText=total.toFixed(2);
+    document.getElementById('orderNumber').innerText=orderNum;
+    document.getElementById('confirmation').style.display='block';
 
-  const vs=Math.floor(10000+Math.random()*90000);
-  const orderNum=Math.floor(10000+Math.random()*90000);
+    const qrDiv=document.getElementById('qrCode');
+    qrDiv.innerHTML='';
+    const iban="CZ9203000000000332726377";
+    const spd=`SPD*1.0*ACC:${iban}*AM:${total.toFixed(2)}*CC:CZK*MSG:Tisk fotografii*X-VS:${vs}`;
+    new QRCode(qrDiv,{text:spd,width:300,height:300,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
 
-  form.style.display='none';
-  const confirmation=document.getElementById('confirmation');
-  confirmation.style.display='block';
-  document.getElementById('orderSummary').innerHTML=summary;
-  document.getElementById('vs').innerText=vs;
-  document.getElementById('payAmount').innerText=total.toFixed(2);
-  document.getElementById('orderNumber').innerText=orderNum;
-
-  const qrDiv=document.getElementById('qrCode');
-  qrDiv.innerHTML='';
-  const iban="CZ9203000000000332726377";
-  const spd=`SPD*1.0*ACC:${iban}*AM:${total.toFixed(2)}*CC:CZK*MSG:Tisk fotografii*X-VS:${vs}`;
-  new QRCode(qrDiv,{text:spd,width:300,height:300,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
-
-  document.getElementById('hiddenOrder').value=`Objednávka č.${orderNum}\n${summary.replace(/<br>/g,"\n")}Celková cena: ${total.toFixed(2)} Kč`;
-
-  // odeslání na Netlify klasicky
-  form.submit();
+    document.getElementById('hiddenOrder').value=`Objednávka č.${orderNum}\n${summary.replace(/<br>/g,"\n")}Celková cena: ${total.toFixed(2)} Kč`;
+  },500);
 });
 
 // GDPR toggle
@@ -222,7 +210,6 @@ if(gdprLink&&gdprDetails){
 const hamburger=document.getElementById('hamburger');
 const mobileMenu=document.getElementById('mobileMenu');
 hamburger.addEventListener('click',()=>{ mobileMenu.classList.toggle('active'); });
-});
 </script>
 </main>
 </div>
