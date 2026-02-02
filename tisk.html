@@ -9,7 +9,6 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
-/* TABULKA & FORMULÁŘ */
 table { width:100%; border-collapse: collapse; margin-top:20px; }
 th, td { border-bottom:1px solid #ddd; padding:10px; text-align:left; }
 th { background:#f5f5f5; }
@@ -18,7 +17,6 @@ button.small { padding:6px 12px; font-size:13px; }
 #confirmation { display:none; margin-top:20px; padding:15px; border:1px solid #ccc; border-radius:6px; background:#f9f9f9; }
 #qrCode { margin-top:15px; text-align:center; }
 #qrCode canvas { display:block; margin:auto; }
-.gdpr-consent label a { text-decoration:underline; color:#0073e6; }
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -26,7 +24,6 @@ button.small { padding:6px 12px; font-size:13px; }
 <body>
 <div class="container">
 
-<!-- SIDEBAR -->
 <aside class="sidebar">
     <div class="logo">
         <a href="index.html"><img src="img/logo.webp" alt="Logo"></a>
@@ -42,7 +39,6 @@ button.small { padding:6px 12px; font-size:13px; }
     <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
 </aside>
 
-<!-- MOBIL MENU -->
 <nav class="mobile-menu" id="mobileMenu">
     <ul>
         <li><a href="index.html">Úvod</a></li>
@@ -93,18 +89,6 @@ button.small { padding:6px 12px; font-size:13px; }
 
 <label>Poznámka:</label>
 <textarea name="poznamka"></textarea>
-
-<div class="gdpr-consent">
-<label>
-<input type="checkbox" id="gdprConsent" name="gdpr_consent">
-Souhlasím se zpracováním osobních údajů dle <a href="#gdpr-details" target="_blank">zásad ochrany osobních údajů</a>.
-</label>
-<div id="gdpr-details" style="display:none; margin-top:10px; border:1px solid #ccc; padding:10px;">
-<h3>Zásady ochrany osobních údajů – ŠapiFOTO</h3>
-<p>Správcem vašich osobních údajů je <strong>Petr Šapovalov, firma ŠapiFOTO, IČ 19942826</strong>.</p>
-<p>Vaše údaje zpracovávám výhradně za účelem vyřízení a doručení objednávky.</p>
-</div>
-</div>
 
 <button type="submit" id="submitBtn">Odeslat objednávku</button>
 </form>
@@ -172,13 +156,6 @@ function calculate() {
 
 document.getElementById('addItemBtn').addEventListener('click', addRow);
 
-// GDPR toggle
-document.querySelector('.gdpr-consent a').addEventListener('click', e=>{
-    e.preventDefault();
-    const gdprDetails = document.getElementById('gdpr-details');
-    gdprDetails.style.display = gdprDetails.style.display==='none'?'block':'none';
-});
-
 // Hamburger
 const hamburger = document.getElementById('hamburger');
 const mobileMenu = document.getElementById('mobileMenu');
@@ -188,10 +165,6 @@ hamburger.addEventListener('click', ()=>{ mobileMenu.classList.toggle('active');
 const form = document.getElementById('orderForm');
 form.addEventListener('submit', e=>{
     e.preventDefault();
-    if(!document.getElementById('gdprConsent').checked){
-        alert('Musíte souhlasit se zpracováním osobních údajů.');
-        return;
-    }
 
     // Přehled
     let summaryText = '';
