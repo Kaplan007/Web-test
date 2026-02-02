@@ -9,7 +9,6 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
-/* Tabulky */
 table { width:100%; border-collapse: collapse; margin-top:20px; }
 th, td { border-bottom:1px solid #ddd; padding:10px; text-align:left; }
 th { background:#f5f5f5; }
@@ -19,17 +18,32 @@ button.small { padding:6px 12px; font-size:13px; }
 #qrCode { margin-top:15px; text-align:center; }
 #qrCode canvas { display:block; margin:auto; }
 .gdpr-consent label a { text-decoration:underline; color:#0073e6; }
+
+/* Sidebar / Topbar styl */
+@media (max-width: 800px) {
+    .sidebar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; padding: 0 15px; display:flex; align-items:center; justify-content:space-between; background-color:#E8C098; border-bottom:1px solid #e5e5e5; z-index:1001; }
+    .sidebar .logo img { width:40px; }
+    .sidebar ul { display:none; }
+    .hamburger { display:flex; flex-direction:column; cursor:pointer; width:28px; height:20px; justify-content:space-between; }
+    .hamburger span { display:block; height:3px; background:#111; border-radius:3px; }
+    .mobile-menu.active { right:0; }
+}
+.mobile-menu ul { list-style:none; padding:0; margin:0; }
+.mobile-menu ul li { margin:20px 0; }
+.mobile-menu ul li a { text-decoration:none; color:#111; font-size:16px; }
+
+body, html, .container { margin:0; padding:0; width:100%; height:100%; }
+.content { padding:20px; background-color:transparent; }
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
+
 <div class="container">
 
 <aside class="sidebar">
-    <div class="logo">
-        <a href="index.html"><img src="img/logo.webp" alt="Logo"></a>
-    </div>
+    <div class="logo"><a href="index.html"><img src="img/logo.webp" alt="Logo"></a></div>
     <ul>
         <li class="home"><a href="index.html"><svg viewBox="0 0 24 24"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></svg></a></li>
         <li><a href="omne.html">O mně</a></li>
@@ -38,11 +52,7 @@ button.small { padding:6px 12px; font-size:13px; }
         <li><a href="tisk.html">Tisk</a></li>
         <li><a href="kontakt.html">Kontakt</a></li>
     </ul>
-    <div class="hamburger" id="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-    </div>
+    <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
 </aside>
 
 <nav class="mobile-menu" id="mobileMenu">
@@ -60,63 +70,59 @@ button.small { padding:6px 12px; font-size:13px; }
 <h1>Objednávka tisku fotografií DN</h1>
 <p>(V případě zájmu o tisk fotografií mimo DN mě kontaktujte.)</p>
 
-<form name="tisk-form" id="orderForm" data-netlify="true" netlify-honeypot="bot-field">
-  <input type="hidden" name="form-name" value="tisk-form">
-  <p style="display:none"><input name="bot-field"></p>
-  <input type="hidden" name="hiddenOrder" id="hiddenOrder">
+<form name="tisk-form" data-netlify="true" netlify-honeypot="bot-field" id="orderForm">
+<input type="hidden" name="form-name" value="tisk-form">
+<input type="hidden" name="hiddenOrder" id="hiddenOrder">
+<p style="display:none"><input name="bot-field"></p>
 
-  <label>Jméno:</label>
-  <input type="text" name="jmeno" required>
+<table border="1" cellpadding="5" cellspacing="0">
+  <thead>
+    <tr><th>Formát</th><th>Cena</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>10x15 cm (lesk/polomat)</td><td>10 Kč</td></tr>
+    <tr><td>13x18 cm (lesk/polomat)</td><td>15 Kč</td></tr>
+    <tr><td>A4 21x30 cm (pouze lesk)</td><td>45 Kč</td></tr>
+  </tbody>
+</table>
+<br>
 
-  <label>Email:</label>
-  <input type="email" id="email" name="email" required>
+<label>Jméno:</label>
+<input type="text" name="jmeno" required>
+<label>Email:</label>
+<input type="email" id="email" name="email" required>
+<label>Telefon:</label>
+<input type="tel" name="telefon" required>
 
-  <label>Telefon:</label>
-  <input type="tel" name="telefon" required>
+<h2>Položky</h2>
+<p>Číslo fotografie je posledních 5 číslic z názvu souboru.</p>
 
-  <h2>Položky</h2>
-  <p>Číslo fotografie je posledních 5 číslic z názvu souboru, který zjistíte na Zoneramě po kliknutí na ( i ).</p>
+<table id="orderTable">
+<thead>
+<tr><th>Číslo fotky</th><th>Formát</th><th>Počet</th><th></th></tr>
+</thead>
+<tbody></tbody>
+</table>
 
-  <table id="orderTable">
-    <thead>
-      <tr>
-        <th>Číslo fotky</th>
-        <th>Formát</th>
-        <th>Počet</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<button type="button" id="addItemBtn">+ Přidat položku</button>
+<div id="summaryByFormat" style="margin:10px 0; font-weight:500;"></div>
+<div class="total">Celková cena: <span id="totalPrice">0</span> Kč</div>
 
-  <button type="button" onclick="addRow()">+ Přidat položku</button>
+<label>Poznámka:</label>
+<textarea name="poznamka"></textarea>
 
-  <p>Seznam položek:</p>
-  <div id="summaryByFormat" style="margin-bottom:10px; font-weight:500;"></div>
-  <div class="total">Celková cena: <span id="totalPrice">0</span> Kč</div>
+<div class="gdpr-consent">
+<label style="display:inline-flex; align-items:center; gap:5px;">
+<input type="checkbox" name="gdpr_consent" required style="width:auto; height:auto;">
+<span>Souhlasím se zpracováním osobních údajů dle <a href="#gdpr-details" target="_blank">zásad ochrany osobních údajů</a>.</span>
+</label>
+<div id="gdpr-details" style="display:none; margin-top:10px; border:1px solid #ccc; padding:10px;">
+<h3>Zásady ochrany osobních údajů – ŠapiFOTO</h3>
+<p>Správcem vašich osobních údajů je <strong>Petr Šapovalov, firma ŠapiFOTO, IČ 19942826</strong>.</p>
+</div>
+</div>
 
-  <label>Poznámka:</label>
-  <textarea name="poznamka"></textarea>
-
-  <div class="gdpr-consent">
-    <label style="display:inline-flex; align-items:center; gap:5px;">
-      <input type="checkbox" name="gdpr_consent" required style="width:auto; height:auto; margin:0; padding:0;">
-      <span>Souhlasím se zpracováním osobních údajů dle <a href="#gdpr-details" target="_blank">zásad ochrany osobních údajů</a>.</span>
-    </label>
-    <div id="gdpr-details" style="display:none; margin-top:10px; border:1px solid #ccc; padding:10px;">
-      <h3>Zásady ochrany osobních údajů – ŠapiFOTO</h3>
-      <p>Správcem vašich osobních údajů je <strong>Petr Šapovalov, firma ŠapiFOTO, IČ 19942826</strong>.</p>
-      <p>Vaše osobní údaje (jméno, telefonní číslo, e-mail) zpracovávám <strong>výhradně za účelem vyřízení a doručení vaší objednávky</strong>.</p>
-      <ul>
-        <li>Vaše údaje <strong>nebudou uchovávány déle než je nutné</strong> pro vyřízení objednávky.</li>
-        <li>Vaše údaje <strong>nebudou sdíleny s třetími stranami</strong> ani použity pro marketingové účely.</li>
-        <li>Poskytnutí údajů je <strong>dobrovolné</strong>, avšak nezbytné pro vyřízení objednávky.</li>
-        <li>Máte právo kdykoliv požádat o přístup k vašim údajům, jejich opravu nebo vymazání.</li>
-      </ul>
-    </div>
-  </div>
-
-  <button type="submit" id="submitBtn">Odeslat objednávku</button>
+<button type="submit" id="submitBtn">Odeslat objednávku</button>
 </form>
 
 <div id="confirmation">
@@ -127,100 +133,108 @@ button.small { padding:6px 12px; font-size:13px; }
 <h3>Údaje pro platbu</h3>
 <p>Číslo účtu: 332726377/0300<br>
 Variabilní symbol (VS): <span id="vs"></span><br>
-Částka k úhradě: <span id="payAmount"></span> Kč<br><br>
-QR kód pro platbu naskenujte nebo uložte ihned. Nejde zobrazit zpětně.</p>
+Částka k úhradě: <span id="payAmount"></span> Kč</p>
 <div id="qrCode"></div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', ()=>{
+document.addEventListener('DOMContentLoaded', () => {
 
-const prices = {
-  "10x15 lesk":10, "10x15 polomat":10,
-  "13x18 lesk":15, "13x18 polomat":15,
-  "A4 lesk":45, "A4 polomat":45
-};
+const orderTable = document.querySelector('#orderTable tbody');
+const addItemBtn = document.getElementById('addItemBtn');
+const prices = {"10x15 lesk":10,"10x15 polomat":10,"13x18 lesk":15,"13x18 polomat":15,"A4 lesk":45,"A4 polomat":45};
 
-function addRow() {
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td><input type="text" class="num" name="cislo[]" required></td>
-    <td>
-      <select class="format" name="format[]">
-        ${Object.keys(prices).map(f=>`<option>${f}</option>`).join('')}
-      </select>
-    </td>
-    <td>
-      <select class="count" name="pocet[]">
-        ${[...Array(10)].map((_,i)=>`<option>${i+1}</option>`).join('')}
-      </select>
-    </td>
-    <td><button type="button" class="small" onclick="this.closest('tr').remove(); calculate()">✕</button></td>
+function calculate(){
+  let total=0;
+  const summary={};
+  orderTable.querySelectorAll('tr').forEach(row=>{
+    const f=row.querySelector('.format').value;
+    const c=parseInt(row.querySelector('.count').value);
+    const n=row.querySelector('.num').value.trim();
+    if(!summary[f]) summary[f]={count:0, price:0};
+    summary[f].count+=c;
+    summary[f].price+=prices[f]*c;
+    total+=prices[f]*c;
+  });
+  document.getElementById('summaryByFormat').innerHTML=
+    Object.keys(summary).map(f=>`${f} &nbsp; ${summary[f].count}x &nbsp; ${summary[f].price} Kč`).join('<br>');
+  document.getElementById('totalPrice').innerText=total;
+}
+
+function addRow(){
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td><input type="text" class="num" required></td>
+    <td><select class="format">${Object.keys(prices).map(f=>`<option>${f}</option>`).join('')}</select></td>
+    <td><select class="count">${[...Array(10)].map((_,i)=>`<option>${i+1}</option>`).join('')}</select></td>
+    <td><button type="button" class="small removeBtn">✕</button></td>
   `;
-  document.querySelector('#orderTable tbody').appendChild(tr);
-  tr.querySelectorAll('input, select').forEach(el => el.addEventListener('change', calculate));
+  orderTable.appendChild(tr);
+  tr.querySelector('.removeBtn').addEventListener('click', ()=>{ tr.remove(); calculate(); });
+  tr.querySelector('.format').addEventListener('change', calculate);
+  tr.querySelector('.count').addEventListener('change', calculate);
+  tr.querySelector('.num').addEventListener('input', calculate);
   calculate();
 }
 
-// Přidáme defaultní 1 řádek
+addItemBtn.addEventListener('click', addRow);
+
+// defaultně 1 řádek
 addRow();
 
-function calculate() {
-  let total = 0;
-  const summary = {};
-  document.querySelectorAll('#orderTable tbody tr').forEach(row=>{
-    const format = row.querySelector('.format').value;
-    const count = parseInt(row.querySelector('.count').value);
-    const price = prices[format]*count;
-    total += price;
-    if(summary[format]){
-      summary[format].count += count;
-      summary[format].price += price;
-    } else {
-      summary[format] = {count, price};
-    }
-  });
-  document.getElementById('totalPrice').innerText = total;
-  document.getElementById('summaryByFormat').innerHTML =
-    Object.keys(summary).map(f=>`${f} &nbsp; ${summary[f].count}x &nbsp; ${summary[f].price} Kč`).join('<br>');
-}
-
 // GDPR toggle
-const gdprLink = document.querySelector('.gdpr-consent a');
-const gdprDetails = document.getElementById('gdpr-details');
-if(gdprLink && gdprDetails){
-  gdprLink.addEventListener('click', e=>{
-    e.preventDefault();
-    gdprDetails.style.display = gdprDetails.style.display==='none'?'block':'none';
+document.querySelector('.gdpr-consent a').addEventListener('click', e=>{ e.preventDefault(); const d=document.getElementById('gdpr-details'); d.style.display=d.style.display==='none'?'block':'none'; });
+
+// Hamburger menu
+const hamburger=document.getElementById('hamburger');
+const mobileMenu=document.getElementById('mobileMenu');
+hamburger.addEventListener('click',()=>{mobileMenu.classList.toggle('active');});
+
+// Form submit
+const form=document.getElementById('orderForm');
+form.addEventListener('submit', e=>{
+  e.preventDefault();
+  if(!form.querySelector('input[name="gdpr_consent"]').checked){ alert("Musíte souhlasit se zpracováním osobních údajů."); return; }
+
+  let summaryStr='', total=0, valid=true;
+  orderTable.querySelectorAll('tr').forEach((row,i)=>{
+    const num=row.querySelector('.num').value.trim();
+    const f=row.querySelector('.format').value;
+    const c=parseInt(row.querySelector('.count').value);
+    if(!num) valid=false;
+    summaryStr+=`${i+1}. Foto ${num}, ${f}, ks ${c}, cena: ${prices[f]*c} Kč<br>`;
+    total+=prices[f]*c;
   });
-}
+  if(!valid){ alert("Vyplňte všechna pole objednávky."); return; }
 
-// Hamburger menu toggle
-const hamburger = document.getElementById('hamburger');
-const mobileMenu = document.getElementById('mobileMenu');
-hamburger.addEventListener('click', () => { mobileMenu.classList.toggle('active'); });
+  const vs=Math.floor(10000+Math.random()*90000);
+  const orderNum=Math.floor(10000+Math.random()*90000);
 
-// Při submitu zobrazíme potvrzení a QR kód (Netlify Forms odešle formulář standardně)
-document.getElementById('orderForm').addEventListener('submit', e=>{
-  const vs = Math.floor(10000+Math.random()*90000);
-  const orderNum = Math.floor(10000+Math.random()*90000);
-  const total = parseFloat(document.getElementById('totalPrice').innerText);
+  form.style.display='none';
+  const confirmation=document.getElementById('confirmation');
+  confirmation.style.display='block';
+  document.getElementById('orderSummary').innerHTML=summaryStr;
+  document.getElementById('vs').innerText=vs;
+  document.getElementById('payAmount').innerText=total.toFixed(2);
+  document.getElementById('orderNumber').innerText=orderNum;
 
-  document.getElementById('orderNumber').innerText = orderNum;
-  document.getElementById('vs').innerText = vs;
-  document.getElementById('payAmount').innerText = total.toFixed(2);
-  document.getElementById('confirmation').style.display = 'block';
-  const qrDiv = document.getElementById('qrCode');
-  qrDiv.innerHTML = '';
-  const iban = "CZ9203000000000332726377";
-  const spd = `SPD*1.0*ACC:${iban}*AM:${total.toFixed(2)}*CC:CZK*MSG:Tisk fotografii*X-VS:${vs}`;
+  const qrDiv=document.getElementById('qrCode');
+  qrDiv.innerHTML='';
+  const iban="CZ9203000000000332726377";
+  const spd=`SPD*1.0*ACC:${iban}*AM:${total.toFixed(2)}*CC:CZK*MSG:Tisk fotografii*X-VS:${vs}`;
   new QRCode(qrDiv,{text:spd,width:300,height:300,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
 
-  // Skryjeme formulář
-  e.target.style.display = 'none';
+  document.getElementById('hiddenOrder').value=`Objednávka č.${orderNum}\n${summaryStr.replace(/<br>/g,"\n")}Celková cena: ${total.toFixed(2)} Kč`;
+
+  const formData=new FormData(form);
+  formData.append('reply-to',document.getElementById('email').value);
+  fetch('/', {method:'POST', body:formData})
+  .then(()=>console.log('Formulář odeslán na Netlify'))
+  .catch(err=>alert('Chyba při odeslání formuláře: '+err));
 });
 });
 </script>
+
 </main>
 </div>
 </body>
