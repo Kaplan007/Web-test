@@ -53,7 +53,15 @@ button.small { padding:6px 12px; font-size:13px; }
 
 <main class="content">
 <h1>Objednávka tisku fotografií DN</h1>
-<p>(V případě zájmu o tisk fotografií mimo DN mě kontaktujte.)</p>
+
+<div class="cena-sekce">
+  <p><strong>Ceny fotografií dle formátu:</strong></p>
+  <table class="ceny">
+    <tr><td>10x15 cm</td><td>10 Kč</td></tr>
+    <tr><td>13x18 cm</td><td>15 Kč</td></tr>
+    <tr><td>21x30 cm (A4)</td><td>45 Kč</td></tr>
+  </table>
+</div>
 
 <form name="tisk-form" method="POST" data-netlify="true" id="orderForm">
 <input type="hidden" name="form-name" value="tisk-form">
@@ -94,10 +102,11 @@ Celková cena: <span id="totalPrice">0</span> Kč
 
 <label>Poznámka:</label>
 <textarea name="poznamka"></textarea><br>
-<label>
+<label class="gdpr">
   <input type="checkbox" name="gdpr" required>
-  Souhlasím se zpracováním osobních údajů pro účely vyřízení objednávky
+  <span>Souhlasím se <a href="gdpr.html" target="new">zpracováním osobních údajů</a></span>
 </label>
+
 <br>
 <button type="submit" id="submitBtn">Odeslat objednávku</button>
 </form>

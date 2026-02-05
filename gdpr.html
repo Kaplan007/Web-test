@@ -1,33 +1,64 @@
-<div class="gdpr-consent">
-  <p>
-    Odesláním objednávky souhlasíte se zpracováním vašich osobních údajů pro účely vyřízení objednávky. 
-    <a href="#gdpr-details" target="_blank">Podrobnosti zde</a>.
-  </p>
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zásady zpracování osobních údajů | Šapi FOTO</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+body {
+    font-family: "Montserrat", Arial, sans-serif;
+    padding: 40px;
+    max-width: 800px;
+    margin: auto;
+    line-height: 1.6;
+    color: #222;
+}
+h1 {
+    color: #D48B42;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+h2 {
+    color: #111;
+    font-size: 22px;
+    margin-top: 30px;
+}
+p {
+    margin-bottom: 15px;
+}
+a {
+    color: #D48B42;
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
 
-  <label>
-    <input type="checkbox" name="gdpr_consent" required>
-    Souhlasím se zpracováním osobních údajů dle zásad ochrany osobních údajů.
-  </label>
+<h1>Zásady zpracování osobních údajů</h1>
 
-  <div id="gdpr-details" style="display:none; margin-top:10px; border:1px solid #ccc; padding:10px;">
-    <h3>Zásady ochrany osobních údajů – ŠapiFOTO</h3>
-    <p>Správcem vašich osobních údajů je <strong>Petr Šapovalov, firma ŠapiFOTO, IČ 19942826</strong>.</p>
-    <p>Vaše osobní údaje (jméno, telefonní číslo, e-mail) zpracovávám <strong>výhradně za účelem vyřízení a doručení vaší objednávky</strong>.</p>
-    <ul>
-      <li>Vaše údaje <strong>nebudou uchovávány déle než je nutné</strong> pro vyřízení objednávky.</li>
-      <li>Vaše údaje <strong>nebudou sdíleny s třetími stranami</strong> ani použity pro marketingové účely.</li>
-      <li>Poskytnutí údajů je <strong>dobrovolné</strong>, avšak nezbytné pro vyřízení objednávky.</li>
-      <li>Máte právo kdykoliv požádat o přístup k vašim údajům, jejich opravu nebo vymazání.</li>
-    </ul>
-    <p>Pro více informací mě můžete kontaktovat na e-mailu nebo telefonu uvedeném v objednávkovém formuláři.</p>
-  </div>
-</div>
+<p>Společnost <strong>Šapi FOTO</strong>, IČ 19942826, zpracovává osobní údaje zákazníků pouze za účelem vyřízení objednávky fotografií.</p>
 
-<script>
-  const link = document.querySelector('.gdpr-consent a');
-  const details = document.getElementById('gdpr-details');
-  link.addEventListener('click', function(e) {
-    e.preventDefault();
-    details.style.display = details.style.display === 'none' ? 'block' : 'none';
-  });
-</script>
+<h2>Co zpracováváme</h2>
+<p>Zpracováváme pouze údaje, které nám zákazník poskytne ve formuláři objednávky: jméno, e-mail, telefon, seznam objednaných fotografií a případnou poznámku.</p>
+
+<h2>Účel zpracování</h2>
+<p>Údaje jsou zpracovávány výhradně za účelem:</p>
+<ul>
+    <li>vyřízení objednávky fotografií</li>
+    <li>kontaktování zákazníka ohledně objednávky</li>
+</ul>
+
+<h2>Uchovávání a ochrana údajů</h2>
+<p>Údaje nejsou uchovávány pro jiné účely, nejsou předávány třetím stranám a nejsou používány pro marketing.</p>
+<p>Po vyřízení objednávky jsou údaje anonymizovány nebo smazány.</p>
+
+<h2>Práva zákazníka</h2>
+<p>Zákazník má právo kdykoliv požádat o přístup ke svým údajům, opravu nesprávných údajů nebo jejich vymazání.</p>
+
+<h2>Kontakt</h2>
+<p>V případě dotazů ohledně zpracování osobních údajů nás můžete kontaktovat na e-mailu <strong>petr@sapovalov.cz</strong>.</p>
+
+</body>
+</html>

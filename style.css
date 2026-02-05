@@ -307,3 +307,38 @@ button:hover {
     padding: 4px 4px;     /* menší odsazení uvnitř selectu */
     box-sizing: border-box;
 }
+
+table.ceny {
+  width: 100%;
+  max-width: 480px;
+  border-collapse: collapse;
+  margin: 0;
+  margin-top: 10px;
+}
+table.ceny td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #ddd;
+}
+table.ceny td:first-child {
+  font-weight: 600;
+}
+
+label.gdpr {
+  display: flex;          /* flexbox pro řádek */
+  align-items: center;    /* vertikální zarovnání checkboxu s textem */
+  gap: 8px;               /* mezera mezi checkboxem a textem */
+  flex-wrap: nowrap;      /* nedovolí zalomení */
+}
+
+label.gdpr input[type="checkbox"] {
+  width: auto !important; /* přepiše globální width:100% */
+  margin: 0;              /* odstraní vertikální odsazení */
+  flex: 0 0 auto;         /* checkbox se nebude natahovat */
+}
+
+label.gdpr span {
+  display: inline;        /* text zůstane vedle checkboxu */
+  white-space: nowrap;    /* zabraňuje zalomení textu */
+  font-size: 13px;
+}
+
