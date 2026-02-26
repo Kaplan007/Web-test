@@ -141,6 +141,7 @@ const tbody = document.querySelector('#orderTable tbody');
 const summaryDiv = document.getElementById('summaryByFormat');
 const totalPriceEl = document.getElementById('totalPrice');
 
+// Přidání nové položky
 function addRow() {
   const tr = document.createElement('tr');
   tr.innerHTML = `
@@ -158,6 +159,7 @@ function addRow() {
 document.getElementById('addItemBtn').onclick = addRow;
 addRow();
 
+// Výpočet celkové ceny a souhrnu
 function calculate() {
   let total = 0;
   let summary = {};
@@ -172,9 +174,11 @@ function calculate() {
   totalPriceEl.innerText = total;
 }
 
+// Submit handler
 document.getElementById('orderForm').addEventListener('submit', e => {
   e.preventDefault();
 
+  // Vytvoření souhrnu položek
   let summaryText = '';
   tbody.querySelectorAll('tr').forEach((row,i)=>{
     summaryText += `${i+1}. ${row.querySelector('.num').value} / ${row.querySelector('.format').value} / ${row.querySelector('.count').value} ks\n`;
@@ -187,12 +191,22 @@ document.getElementById('orderForm').addEventListener('submit', e => {
   document.getElementById('order_number').value = vs;
   document.getElementById('total_price').value = total;
 
+  const formData = new FormData(e.target); // <-- důležité!
 
+  // Odeslání do Google Scriptu
   fetch('https://script.google.com/macros/s/AKfycbzP5ID3j0Tmesovdu057cae961VL0AC8Y585kBUqX4g-JDpX9rs-DmOVR3Jix3W6HA/exec', {
-  method:'POST',
-  body:new FormData(e.target)
-});
+    method:'POST',
+    body: formData
+  });
 
+  // Odeslání do Netlify
+  fetch('/', {
+    method: 'POST',
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(formData).toString()
+  });
+
+  // Zobrazení potvrzení
   document.getElementById('orderForm').style.display='none';
   document.getElementById('confirmation').style.display='block';
   document.getElementById('confOrderNum').innerText = vs;
@@ -206,13 +220,12 @@ document.getElementById('orderForm').addEventListener('submit', e => {
   });
 });
 
-// hamburger
+// Hamburger menu
 document.getElementById('hamburger').onclick = () =>
   document.getElementById('mobileMenu').classList.toggle('active');
 
 });
 </script>
-
 </main>
 </div>
 </body>
