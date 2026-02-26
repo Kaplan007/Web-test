@@ -187,7 +187,11 @@ document.getElementById('orderForm').addEventListener('submit', e => {
   document.getElementById('order_number').value = vs;
   document.getElementById('total_price').value = total;
 
-  fetch('/', { method:'POST', body:new FormData(e.target) });
+
+  fetch('https://script.google.com/macros/s/AKfycbzP5ID3j0Tmesovdu057cae961VL0AC8Y585kBUqX4g-JDpX9rs-DmOVR3Jix3W6HA/exec', {
+  method:'POST',
+  body:new FormData(e.target)
+});
 
   document.getElementById('orderForm').style.display='none';
   document.getElementById('confirmation').style.display='block';
