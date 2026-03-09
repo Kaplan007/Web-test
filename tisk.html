@@ -53,6 +53,7 @@ button.small { padding:6px 12px; font-size:13px; }
 
 <main class="content">
 <h1>Objednávka tisku fotografií DN</h1>
+<p><strong>Fotografie můžete vybírat na: <a href="https://dancenation.zonerama.com" target="new">https://dancenation.zonerama.com</a></strong></p>
 
 <div class="cena-sekce">
   <p><strong>Ceny fotografií dle formátu:</strong></p>
@@ -79,6 +80,13 @@ button.small { padding:6px 12px; font-size:13px; }
 <input type="tel" name="telefon" required>
 
 <h2>Položky</h2>
+<p>
+  <a href="#" id="showHelp">Kde najdu číslo fotky?</a>
+</p>
+
+<div id="helpImage" style="display:none; margin-top:10px;">
+  <img src="img/infopc.jpg" style="max-width:100%; border-radius:6px;">
+</div>
 <table id="orderTable">
 <thead>
 <tr>
@@ -223,6 +231,12 @@ document.getElementById('orderForm').addEventListener('submit', e => {
 // Hamburger menu
 document.getElementById('hamburger').onclick = () =>
   document.getElementById('mobileMenu').classList.toggle('active');
+
+document.getElementById("showHelp").onclick = function(e){
+  e.preventDefault();
+  const img = document.getElementById("helpImage");
+  img.style.display = img.style.display === "none" ? "block" : "none";
+};
 
 });
 </script>
