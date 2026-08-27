@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Objednávka focení sólo / duo | Fotograf</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<style>
+.form-info {
+    margin-bottom: 25px;
+}
+
+.form-info p {
+    line-height: 1.6;
+}
+
+.cena {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 20px 0;
+}
+
+label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+select,
+textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.choice {
+    margin-top: 8px;
+}
+
+.choice label {
+    display: inline-block;
+    margin-right: 25px;
+}
+
+.gdpr {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 25px;
+}
+
+.gdpr input {
+    margin-top: 4px;
+}
+
+#soloFields,
+#duoFields {
+    margin-top: 10px;
+}
+
+#confirmation {
+    display: none;
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #f9f9f9;
+}
+
+#confirmation h2 {
+    margin-top: 0;
+}
+
+.error-message {
+    display: none;
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff0f0;
+    border: 1px solid #d88;
+    border-radius: 6px;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<aside class="sidebar">
+
+    <div class="logo">
+        <a href="index.html">
+            <img src="img/logo.webp" alt="Logo">
+        </a>
+    </div>
+
+    <ul>
+        <li class="home">
+            <a href="index.html">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/>
+                </svg>
+            </a>
+        </li>
+
+        <li><a href="omne.html">O mně</a></li>
+        <li><a href="fotogalerie.html">Fotogalerie</a></li>
+        <li><a href="sluzby.html">Služby</a></li>
+ <li><a href="dnfoto.html">DN foto</a></li>
+        <li><a href="tisk.html">Tisk</a></li>
+        <li><a href="kontakt.html">Kontakt</a></li>
+    </ul>
+
+    <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+</aside>
+
+<nav class="mobile-menu" id="mobileMenu">
+    <ul>
+        <li><a href="index.html">Úvod</a></li>
+        <li><a href="omne.html">O mně</a></li>
+        <li><a href="fotogalerie.html">Fotogalerie</a></li>
+        <li><a href="sluzby.html">Služby</a></li>
+ <li><a href="dnfoto.html">DN foto</a></li>
+        <li><a href="tisk.html">Tisk</a></li>
+        <li><a href="kontakt.html">Kontakt</a></li>
+    </ul>
+</nav>
+
+<main class="content">
+
+<h1>Objednávka focení sólo / duo</h1>
+
+<div class="form-info">
+
+    <p>
+        <strong>Taneční soutěž:</strong><br>
+        CDO Tábor Zemská liga, 3.10.2026
+    </p>
+
+    <div class="cena">
+        Cena: 250 Kč za 1 sólo nebo 1 duo
+    </div>
+
+    <p>
+        <strong><a href="podminkydnfoto.html" target="_blank">
+            Podmínky služby
+        </a>
+</strong><br>
+        
+    </p>
+
+</div>
+
+
+<form
+    name="foceni-form"
+    method="POST"
+    data-netlify="true"
+    id="orderForm">
+
+<!-- SKRYTÉ ÚDAJE -->
+<input type="hidden" name="form-name" value="foceni-form">
+<input type="hidden" name="cena" value="250 Kč">
+<input type="hidden" name="tanecni_soutez" value="CDO Tábor Zemská liga, 3.10.2026">
+
+
+<label for="jmeno">
+    Jméno rodiče:
+</label>
+
+<input
+    type="text"
+    id="jmeno"
+    name="jmeno"
+    required
+    autocomplete="name">
+
+
+<label for="telefon">
+    Telefon:
+</label>
+
+<input
+    type="tel"
+    id="telefon"
+    name="telefon"
+    required
+    autocomplete="tel">
+
+
+<label for="email">
+    E-mail:
+</label>
+
+<input
+    type="email"
+    id="email"
+    name="email"
+    required
+    autocomplete="email">
+
+
+<label>
+    Typ focení:
+</label>
+
+<div class="choice">
+
+    <label>
+        <input
+            type="radio"
+            name="typ_foceni"
+            value="Sólo"
+            required>
+        Sólo
+    </label>
+
+    <label>
+        <input
+            type="radio"
+            name="typ_foceni"
+            value="Duo"
+            required>
+        Duo
+    </label>
+
+</div>
+
+
+<!-- POLE PRO SÓLO -->
+
+<div id="soloFields" style="display:none;">
+
+    <label for="tanecnice_solo">
+        Jméno tanečnice:
+    </label>
+
+    <input
+        type="text"
+        id="tanecnice_solo"
+        name="tanecnice_solo">
+
+</div>
+
+
+<!-- POLE PRO DUO -->
+
+<div id="duoFields" style="display:none;">
+
+    <label for="tanecnice_duo_1">
+        Jméno první tanečnice:
+    </label>
+
+    <input
+        type="text"
+        id="tanecnice_duo_1"
+        name="tanecnice_duo_1">
+
+
+    <label for="tanecnice_duo_2">
+        Jméno druhé tanečnice:
+    </label>
+
+    <input
+        type="text"
+        id="tanecnice_duo_2"
+        name="tanecnice_duo_2">
+
+</div>
+
+
+<label for="kategorie">
+    Kategorie:
+</label>
+
+<select
+    id="kategorie"
+    name="kategorie"
+    required>
+
+    <option value="" selected disabled>
+        Vyberte kategorii
+    </option>
+
+    <option value="DVK A">DVK A</option>
+    <option value="DVK B">DVK B</option>
+    <option value="DVK M">DVK M</option>
+    <option value="JVK A">JVK A</option>
+    <option value="JVK B">JVK B</option>
+    <option value="JVK C">JVK C</option>
+
+</select>
+
+
+<label class="gdpr">
+    <input
+        type="checkbox"
+        name="gdpr"
+        required>
+
+    <span>
+        Souhlasím se
+        <a href="gdpr.html" target="_blank">
+            zpracováním osobních údajů
+        </a>
+    </span>
+</label>
+
+<label class="gdpr">
+    <input
+        type="checkbox"
+        name="podminky"
+        required>
+
+    <span>
+        Souhlasím s
+        <a href="podminkydnfoto.html" target="_blank">
+            podmínkami služby
+        </a>
+    </span>
+</label>
+
+<br>
+
+<button type="submit" id="submitBtn">
+    Odeslat objednávku
+</button>
+
+<div class="error-message" id="errorMessage">
+    Objednávku se nepodařilo odeslat. Zkuste to prosím znovu.
+</div>
+
+</form>
+
+
+<!-- POTVRZENÍ OBJEDNÁVKY -->
+
+<div id="confirmation">
+
+    <h2>Objednávka byla odeslána</h2>
+
+    <p>
+        Děkujeme za objednávku focení.
+    </p>
+
+    <p>
+        Potvrzení objednávky jsme odeslali na váš e-mail.
+    </p>
+
+    <p>
+        <strong>Taneční soutěž:</strong>
+        CDO Tábor Zemská liga, 3.10.2026
+        <br>
+
+        <strong>Typ focení:</strong>
+        <span id="confType"></span>
+        <br>
+
+        <strong>Tanečnice:</strong>
+        <span id="confDancers"></span>
+        <br>
+
+        <strong>Kategorie:</strong>
+        <span id="confCategory"></span>
+        <br>
+
+        <strong>Cena:</strong>
+        250 Kč
+    </p>
+
+</div>
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    const form = document.getElementById('orderForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const confirmation = document.getElementById('confirmation');
+    const errorMessage = document.getElementById('errorMessage');
+
+    const soloFields = document.getElementById('soloFields');
+    const duoFields = document.getElementById('duoFields');
+
+    const soloInput = document.getElementById('tanecnice_solo');
+    const duoInput1 = document.getElementById('tanecnice_duo_1');
+    const duoInput2 = document.getElementById('tanecnice_duo_2');
+
+
+    // =========================================
+    // ZOBRAZENÍ POLÍ PODLE VOLBY SÓLO / DUO
+    // =========================================
+
+    document.querySelectorAll('input[name="typ_foceni"]').forEach(radio => {
+
+        radio.addEventListener('change', function() {
+
+            if (this.value === 'Sólo') {
+
+                soloFields.style.display = 'block';
+                duoFields.style.display = 'none';
+
+                soloInput.required = true;
+
+                duoInput1.required = false;
+                duoInput2.required = false;
+
+                duoInput1.value = '';
+                duoInput2.value = '';
+
+            }
+
+            if (this.value === 'Duo') {
+
+                soloFields.style.display = 'none';
+                duoFields.style.display = 'block';
+
+                duoInput1.required = true;
+                duoInput2.required = true;
+
+                soloInput.required = false;
+                soloInput.value = '';
+
+            }
+
+        });
+
+    });
+
+
+    // =========================================
+    // ODESLÁNÍ FORMULÁŘE
+    // =========================================
+
+    form.addEventListener('submit', async (e) => {
+
+        e.preventDefault();
+
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Odesílám...';
+
+        errorMessage.style.display = 'none';
+
+        const formData = new FormData(form);
+
+        const type = formData.get('typ_foceni');
+        const category = formData.get('kategorie');
+
+        let dancers = '';
+
+        if (type === 'Sólo') {
+
+            dancers =
+                formData.get('tanecnice_solo');
+
+        }
+
+        if (type === 'Duo') {
+
+            dancers =
+                formData.get('tanecnice_duo_1') +
+                ' + ' +
+                formData.get('tanecnice_duo_2');
+
+        }
+
+
+        try {
+
+            // =========================================
+            // 1. GOOGLE APPS SCRIPT
+            // =========================================
+
+            await fetch(
+                'https://script.google.com/macros/s/AKfycbysHFdWmBpfyKeNXBBCsYsWTRVsv5cLXiCeEqnc9lLYfdGYGIH8qwjQmYKbjVYjHL82Vw/exec',
+                {
+                    method: 'POST',
+                    body: formData
+                }
+            );
+
+
+            // =========================================
+            // 2. NETLIFY FORMS
+            // =========================================
+
+            await fetch('/', {
+
+                method: 'POST',
+
+                headers: {
+                    'Content-Type':
+                    'application/x-www-form-urlencoded'
+                },
+
+                body:
+                    new URLSearchParams(formData).toString()
+
+            });
+
+
+            // =========================================
+            // 3. POTVRZENÍ OBJEDNÁVKY
+            // =========================================
+
+            document.getElementById('confType').innerText = type;
+            document.getElementById('confDancers').innerText = dancers;
+            document.getElementById('confCategory').innerText = category;
+
+            form.style.display = 'none';
+            confirmation.style.display = 'block';
+
+            confirmation.scrollIntoView({
+                behavior: 'smooth'
+            });
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            errorMessage.style.display = 'block';
+
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Odeslat objednávku';
+
+        }
+
+    });
+
+
+    // =========================================
+    // HAMBURGER MENU
+    // =========================================
+
+    document.getElementById('hamburger').onclick = () => {
+
+        document
+            .getElementById('mobileMenu')
+            .classList
+            .toggle('active');
+
+    };
+
+});
+
+</script>
+
+</main>
+</div>
+
+</body>
+</html>
