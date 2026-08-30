@@ -39,28 +39,9 @@ textarea {
     box-sizing: border-box;
 }
 
-.choice {
-    margin-top: 8px;
-}
 
-.choice {
-    display: flex;
-    align-items: center;
-    gap: 25px;
-    flex-wrap: wrap;
-}
 
-.choice label {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    margin: 0;
-    cursor: pointer;
-}
 
-.choice input[type="radio"] {
-    margin: 0;
-}
 
 .gdpr {
     display: flex;
@@ -244,31 +225,43 @@ button:disabled {
     autocomplete="email">
 
 
-<label>
-    Typ focení:
+
+<!-- KATEGORIE -->
+
+<label for="kategorie">
+    Kategorie:
 </label>
 
-<div class="choice">
+<select
+    id="kategorie"
+    name="kategorie"
+    required>
 
-    <label>
-        <input
-            type="radio"
-            name="typ_foceni"
-            value="Sólo"
-            required>
-        Sólo
-    </label>
+    <option value="" selected disabled>
+        Vyberte kategorii
+    </option>
 
-    <label>
-        <input
-            type="radio"
-            name="typ_foceni"
-            value="Duo"
-            required>
-        Duo
-    </label>
+    <option value="Sólo MINI KIDS A">Sólo MINI KIDS A</option>
+    <option value="Sólo CHILDREN C">Sólo CHILDREN C</option>
+    <option value="Sólo CHILDREN B">Sólo CHILDREN B</option>
+    <option value="Sólo CHILDREN A">Sólo CHILDREN A</option>
+    <option value="Sólo CHILDREN M">Sólo CHILDREN M</option>
+    <option value="Sólo JUNIORS C">Sólo JUNIORS C</option>
+    <option value="Sólo JUNIORS B">Sólo JUNIORS B</option>
+    <option value="Sólo JUNIORS A">Sólo JUNIORS A</option>
+    <option value="Sólo JUNIORS M">Sólo JUNIORS M</option>
+    <option value="Sólo ADULTS A">Sólo ADULTS A</option>
+    <option value="Sólo ADULTS M">Sólo ADULTS M</option>
 
-</div>
+    <option value="Duo MINI KIDS A">Duo MINI KIDS A</option>
+    <option value="Duo CHILDREN A">Duo CHILDREN A</option>
+    <option value="Duo CHILDREN M">Duo CHILDREN M</option>
+    <option value="Duo JUNIORS A">Duo JUNIORS A</option>
+    <option value="Duo JUNIORS M">Duo JUNIORS M</option>
+    <option value="Duo ADULTS A">Duo ADULTS A</option>
+    <option value="Duo ADULTS M">Duo ADULTS M</option>
+
+</select>
 
 
 <!-- POLE PRO SÓLO -->
@@ -309,29 +302,6 @@ button:disabled {
         style="margin-top: 10px;">
 
 </div>
-
-
-<label for="kategorie">
-    Kategorie:
-</label>
-
-<select
-    id="kategorie"
-    name="kategorie"
-    required>
-
-    <option value="" selected disabled>
-        Vyberte kategorii
-    </option>
-
-    <option value="DVK A">DVK A</option>
-    <option value="DVK B">DVK B</option>
-    <option value="DVK M">DVK M</option>
-    <option value="JVK A">JVK A</option>
-    <option value="JVK B">JVK B</option>
-    <option value="JVK C">JVK C</option>
-
-</select>
 
 
 <label class="gdpr">
@@ -433,47 +403,56 @@ document.addEventListener('DOMContentLoaded', () => {
     const soloInput = document.getElementById('tanecnice_solo');
     const duoInput1 = document.getElementById('tanecnice_duo_1');
     const duoInput2 = document.getElementById('tanecnice_duo_2');
-
-
     // =========================================
-    // ZOBRAZENÍ POLÍ PODLE VOLBY SÓLO / DUO
+    // ZOBRAZENÍ POLÍ PODLE VYBRANÉ KATEGORIE
     // =========================================
 
-    document.querySelectorAll('input[name="typ_foceni"]').forEach(radio => {
+    const categorySelect = document.getElementById('kategorie');
 
-        radio.addEventListener('change', function() {
+    categorySelect.addEventListener('change', function() {
 
-            if (this.value === 'Sólo') {
+        const category = this.value;
 
-                soloFields.style.display = 'block';
-                duoFields.style.display = 'none';
+        if (category.startsWith('Sólo ')) {
 
-                soloInput.required = true;
+            soloFields.style.display = 'block';
+            duoFields.style.display = 'none';
 
-                duoInput1.required = false;
-                duoInput2.required = false;
+            soloInput.required = true;
 
-                duoInput1.value = '';
-                duoInput2.value = '';
+            duoInput1.required = false;
+            duoInput2.required = false;
 
-            }
+            duoInput1.value = '';
+            duoInput2.value = '';
+        }
 
-            if (this.value === 'Duo') {
+        else if (category.startsWith('Duo ')) {
 
-                soloFields.style.display = 'none';
-                duoFields.style.display = 'block';
+            soloFields.style.display = 'none';
+            duoFields.style.display = 'block';
 
-                duoInput1.required = true;
-                duoInput2.required = true;
+            duoInput1.required = true;
+            duoInput2.required = true;
 
-                soloInput.required = false;
-                soloInput.value = '';
+            soloInput.required = false;
+            soloInput.value = '';
+        }
 
-            }
+        else {
 
-        });
+            soloFields.style.display = 'none';
+            duoFields.style.display = 'none';
+
+            soloInput.required = false;
+            duoInput1.required = false;
+            duoInput2.required = false;
+        }
 
     });
+
+
+
 
 
     // =========================================
@@ -491,19 +470,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData(form);
 
-        const type = formData.get('typ_foceni');
         const category = formData.get('kategorie');
 
+        let type = '';
         let dancers = '';
 
-        if (type === 'Sólo') {
+        if (category.startsWith('Sólo ')) {
+
+            type = 'Sólo';
 
             dancers =
                 formData.get('tanecnice_solo');
 
         }
 
-        if (type === 'Duo') {
+        if (category.startsWith('Duo ')) {
+
+            type = 'Duo';
 
             dancers =
                 formData.get('tanecnice_duo_1') +
