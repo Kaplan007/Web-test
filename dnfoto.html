@@ -122,7 +122,12 @@ button:disabled {
 
 #inactiveCategories strong {
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
+}
+
+#inactiveCategories .inactive-category {
+    display: block;
+    margin: 3px 0;
 }
 </style>
 </head>
@@ -463,8 +468,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (config.inactiveCategories && config.inactiveCategories.length) {
                     inactiveCategoriesBox.innerHTML =
-                        '<strong>Nepřijímám objednávky pro:</strong>' +
-                        config.inactiveCategories.map(x => escapeHtml(x)).join(', ');
+                        '<strong>Na tuto soutěž není možné objednat focení pro kategorie:</strong>' +
+                        config.inactiveCategories
+                            .map(x => '<span class="inactive-category">' + escapeHtml(x) + '</span>')
+                            .join('');
                     inactiveCategoriesBox.style.display = 'block';
                 } else {
                     inactiveCategoriesBox.style.display = 'none';
