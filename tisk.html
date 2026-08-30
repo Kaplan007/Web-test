@@ -196,15 +196,15 @@ document.getElementById('orderForm').addEventListener('submit', async e => {
 
     // Vytvoření souhrnu položek
     let summaryText = '';
-    tbody.querySelectorAll('tr').forEach((row,i)=>{
-      summaryText += `${i+1}. ${row.querySelector('.num').value} / ${row.querySelector('.format').value} / ${row.querySelector('.count').value} ks
+
+    tbody.querySelectorAll('tr').forEach((row, i) => {
+      summaryText += `${i + 1}. ${row.querySelector('.num').value} / ${row.querySelector('.format').value} / ${row.querySelector('.count').value} ks
 `;
     });
 
     const total = totalPriceEl.innerText;
 
-    // 5místné číslo objednávky / variabilní symbol.
-    // Generuje se před odesláním, aby stejnou hodnotu znal web i Apps Script.
+    // Číslo objednávky / variabilní symbol
     const vs = Math.floor(10000 + Math.random() * 90000).toString();
 
     document.getElementById('order_summary').value = summaryText;
@@ -213,39 +213,48 @@ document.getElementById('orderForm').addEventListener('submit', async e => {
 
     const formData = new FormData(e.target);
 
-    // Google Apps Script.
-    // mode:no-cors je záměrně – Apps Script Web App může při cross-origin
-    // požadavku přesměrovat odpověď a prohlížeč pak nepovolí její čtení.
-    await fetch('https://script.google.com/macros/s/AKfycbzP5ID3j0Tmesovdu057cae961VL0AC8Y585kBUqX4g-JDpX9rs-DmOVR3Jix3W6HA/exec', {
-      method: 'POST',
-      body: formData,
-      mode: 'no-cors'
-    });
+    // 1) GOOGLE APPS SCRIPT
+    // Stejná logika jako u fungujícího formuláře focení:
+    // normální POST, bez mode:"no-cors" a bez čtení odpovědi.
+    await fetch(
+      'https://script.google.com/macros/s/AKfycbzP5ID3j0Tmesovdu057cae961VL0AC8Y585kBUqX4g-JDpX9rs-DmOVR3Jix3W6HA/exec',
+      {
+        method: 'POST',
+        body: formData
+      }
+    );
 
-    // Netlify Forms jako záloha
+    // 2) NETLIFY FORMS – záložní uložení
     await fetch('/', {
       method: 'POST',
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
       body: new URLSearchParams(formData).toString()
     });
 
-    // Zobrazení potvrzení
-    document.getElementById('orderForm').style.display='none';
-    document.getElementById('confirmation').style.display='block';
+    // 3) POTVRZENÍ NA WEBU
+    document.getElementById('orderForm').style.display = 'none';
+    document.getElementById('confirmation').style.display = 'block';
+
     document.getElementById('confOrderNum').innerText = vs;
     document.getElementById('confSummary').innerText = summaryText;
     document.getElementById('confVS').innerText = vs;
     document.getElementById('confAmount').innerText = total;
 
     new QRCode(document.getElementById('qrCode'), {
-      text:`SPD*1.0*ACC:CZ9203000000000332726377*AM:${total}*CC:CZK*X-VS:${vs}`,
-      width:280, height:280
+      text: `SPD*1.0*ACC:CZ9203000000000332726377*AM:${total}*CC:CZK*X-VS:${vs}`,
+      width: 280,
+      height: 280
     });
 
   } catch (error) {
 
     console.error(error);
-    alert('Objednávku se nepodařilo odeslat. Zkuste to prosím znovu.');
+
+    alert(
+      'Objednávku se nepodařilo správně odeslat. Zkuste to prosím znovu.'
+    );
 
     submitBtn.disabled = false;
     submitBtn.innerText = 'Odeslat objednávku';
