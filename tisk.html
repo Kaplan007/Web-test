@@ -185,81 +185,78 @@ function calculate() {
 }
 
 // Submit handler
-document.getElementById('orderForm').addEventListener('submit', async e => {
+document.getElementById('orderForm').addEventListener('submit', e => {
   e.preventDefault();
 
   const submitBtn = document.getElementById('submitBtn');
   submitBtn.disabled = true;
   submitBtn.innerText = 'Odesílám...';
 
-  try {
+  // Vytvoření souhrnu položek
+  let summaryText = '';
 
-    // Vytvoření souhrnu položek
-    let summaryText = '';
-
-    tbody.querySelectorAll('tr').forEach((row, i) => {
-      summaryText += `${i + 1}. ${row.querySelector('.num').value} / ${row.querySelector('.format').value} / ${row.querySelector('.count').value} ks
+  tbody.querySelectorAll('tr').forEach((row, i) => {
+    summaryText += `${i + 1}. ${row.querySelector('.num').value} / ${row.querySelector('.format').value} / ${row.querySelector('.count').value} ks
 `;
-    });
+  });
 
-    const total = totalPriceEl.innerText;
+  const total = totalPriceEl.innerText;
 
-    // Číslo objednávky / variabilní symbol
-    const vs = Math.floor(10000 + Math.random() * 90000).toString();
+  // Číslo objednávky / variabilní symbol
+  const vs = Math.floor(10000 + Math.random() * 90000).toString();
 
-    document.getElementById('order_summary').value = summaryText;
-    document.getElementById('order_number').value = vs;
-    document.getElementById('total_price').value = total;
+  document.getElementById('order_summary').value = summaryText;
+  document.getElementById('order_number').value = vs;
+  document.getElementById('total_price').value = total;
 
-    const formData = new FormData(e.target);
+  const formData = new FormData(e.target);
 
-    // 1) GOOGLE APPS SCRIPT
-    // Stejná logika jako u fungujícího formuláře focení:
-    // normální POST, bez mode:"no-cors" a bez čtení odpovědi.
-    await fetch(
-      'https://script.google.com/macros/s/AKfycbzP5ID3j0Tmesovdu057cae961VL0AC8Y585kBUqX4g-JDpX9rs-DmOVR3Jix3W6HA/exec',
-      {
-        method: 'POST',
-        body: formData
-      }
-    );
-
-    // 2) NETLIFY FORMS – záložní uložení
-    await fetch('/', {
+  // 1) GOOGLE APPS SCRIPT
+  // Odesílá se samostatně. Nečekáme na odpověď, protože Apps Script
+  // může objednávku úspěšně uložit a odeslat e-maily, ale prohlížeč
+  // přesto může později vyhodnotit cross-origin odpověď jako chybu.
+  fetch(
+    'https://script.google.com/macros/s/AKfycbzP5ID3j0Tmesovdu057cae961VL0AC8Y585kBUqX4g-JDpX9rs-DmOVR3Jix3W6HA/exec',
+    {
       method: 'POST',
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: new URLSearchParams(formData).toString()
-    });
+      body: formData,
+      keepalive: true
+    }
+  ).catch(error => {
+    console.error('Google Apps Script:', error);
+  });
 
-    // 3) POTVRZENÍ NA WEBU
-    document.getElementById('orderForm').style.display = 'none';
-    document.getElementById('confirmation').style.display = 'block';
+  // 2) NETLIFY FORMS – pouze záložní uložení.
+  // Jeho případná chyba nesmí změnit potvrzení hlavní objednávky.
+  fetch('/', {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: new URLSearchParams(formData).toString(),
+    keepalive: true
+  }).catch(error => {
+    console.error('Netlify Forms:', error);
+  });
 
-    document.getElementById('confOrderNum').innerText = vs;
-    document.getElementById('confSummary').innerText = summaryText;
-    document.getElementById('confVS').innerText = vs;
-    document.getElementById('confAmount').innerText = total;
+  // 3) POTVRZENÍ NA WEBU
+  // Zobrazí se ihned po předání obou požadavků prohlížeči.
+  document.getElementById('orderForm').style.display = 'none';
+  document.getElementById('confirmation').style.display = 'block';
 
-    new QRCode(document.getElementById('qrCode'), {
-      text: `SPD*1.0*ACC:CZ9203000000000332726377*AM:${total}*CC:CZK*X-VS:${vs}`,
-      width: 280,
-      height: 280
-    });
+  document.getElementById('confOrderNum').innerText = vs;
+  document.getElementById('confSummary').innerText = summaryText;
+  document.getElementById('confVS').innerText = vs;
+  document.getElementById('confAmount').innerText = total;
 
-  } catch (error) {
+  const qrCode = document.getElementById('qrCode');
+  qrCode.innerHTML = '';
 
-    console.error(error);
-
-    alert(
-      'Objednávku se nepodařilo správně odeslat. Zkuste to prosím znovu.'
-    );
-
-    submitBtn.disabled = false;
-    submitBtn.innerText = 'Odeslat objednávku';
-
-  }
+  new QRCode(qrCode, {
+    text: `SPD*1.0*ACC:CZ9203000000000332726377*AM:${total}*CC:CZK*X-VS:${vs}`,
+    width: 280,
+    height: 280
+  });
 });
 
 // Hamburger menu
