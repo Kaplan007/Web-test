@@ -99,6 +99,31 @@ button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
+
+#loadingConfig,
+#ordersClosed,
+#configError {
+    margin-top: 20px;
+    padding: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #f9f9f9;
+}
+
+#ordersClosed,
+#configError {
+    display: none;
+}
+
+#inactiveCategories {
+    margin: 10px 0 22px;
+    line-height: 1.6;
+}
+
+#inactiveCategories strong {
+    display: block;
+    margin-bottom: 4px;
+}
 </style>
 </head>
 
@@ -159,7 +184,7 @@ button:disabled {
 
     <p>
         <strong>Taneční soutěž:</strong><br>
-        CDO Tábor Zemská liga, 3.10.2026
+        <span id="competitionDisplay">Načítám...</span>
     </p>
 
     <div class="cena">
@@ -176,17 +201,29 @@ button:disabled {
 
 </div>
 
+<div id="loadingConfig">Načítám aktuální nastavení objednávek...</div>
+
+<div id="ordersClosed">
+    <strong>Možnost objednání bude spuštěna po zveřejnění harmonogramu následující soutěže.</strong>
+</div>
+
+<div id="configError">
+    Nastavení objednávek se nepodařilo načíst. Zkuste prosím stránku obnovit.
+</div>
+
+<div id="inactiveCategories" style="display:none;"></div>
 
 <form
     name="foceni-form"
     method="POST"
     data-netlify="true"
-    id="orderForm">
+    id="orderForm"
+    style="display:none;">
 
 <!-- SKRYTÉ ÚDAJE -->
 <input type="hidden" name="form-name" value="foceni-form">
 <input type="hidden" name="cena" value="250 Kč">
-<input type="hidden" name="tanecni_soutez" value="CDO Tábor Zemská liga, 3.10.2026">
+<input type="hidden" name="tanecni_soutez" id="tanecni_soutez" value="">
 
 
 <label for="jmeno">
@@ -236,31 +273,7 @@ button:disabled {
     id="kategorie"
     name="kategorie"
     required>
-
-    <option value="" selected disabled>
-        Vyberte kategorii
-    </option>
-
-    <option value="Sólo MINI KIDS A">Sólo MINI KIDS A</option>
-    <option value="Sólo CHILDREN C">Sólo CHILDREN C</option>
-    <option value="Sólo CHILDREN B">Sólo CHILDREN B</option>
-    <option value="Sólo CHILDREN A">Sólo CHILDREN A</option>
-    <option value="Sólo CHILDREN M">Sólo CHILDREN M</option>
-    <option value="Sólo JUNIORS C">Sólo JUNIORS C</option>
-    <option value="Sólo JUNIORS B">Sólo JUNIORS B</option>
-    <option value="Sólo JUNIORS A">Sólo JUNIORS A</option>
-    <option value="Sólo JUNIORS M">Sólo JUNIORS M</option>
-    <option value="Sólo ADULTS A">Sólo ADULTS A</option>
-    <option value="Sólo ADULTS M">Sólo ADULTS M</option>
-
-    <option value="Duo MINI KIDS A">Duo MINI KIDS A</option>
-    <option value="Duo CHILDREN A">Duo CHILDREN A</option>
-    <option value="Duo CHILDREN M">Duo CHILDREN M</option>
-    <option value="Duo JUNIORS A">Duo JUNIORS A</option>
-    <option value="Duo JUNIORS M">Duo JUNIORS M</option>
-    <option value="Duo ADULTS A">Duo ADULTS A</option>
-    <option value="Duo ADULTS M">Duo ADULTS M</option>
-
+    <option value="" selected disabled>Vyberte kategorii</option>
 </select>
 
 
@@ -373,7 +386,7 @@ button:disabled {
 
     <p>
         <strong>Taneční soutěž:</strong>
-        CDO Tábor Zemská liga, 3.10.2026
+<span id="confCompetition"></span>
         <br>
 
         <strong>Typ focení:</strong>
@@ -404,6 +417,97 @@ button:disabled {
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysHFdWmBpfyKeNXBBCsYsWTRVsv5cLXiCeEqnc9lLYfdGYGIH8qwjQmYKbjVYjHL82Vw/exec';
+
+    const loadingConfig = document.getElementById('loadingConfig');
+    const ordersClosed = document.getElementById('ordersClosed');
+    const configError = document.getElementById('configError');
+    const inactiveCategoriesBox = document.getElementById('inactiveCategories');
+    const competitionDisplay = document.getElementById('competitionDisplay');
+    const competitionHidden = document.getElementById('tanecni_soutez');
+    const categorySelect = document.getElementById('kategorie');
+
+    function loadPublicConfig() {
+        const callbackName = 'dnConfig_' + Date.now();
+
+        window[callbackName] = function(config) {
+            try {
+                if (!config || config.status !== 'OK') {
+                    throw new Error('Neplatná konfigurace.');
+                }
+
+                loadingConfig.style.display = 'none';
+
+                if (!config.orderingAvailable) {
+                    document.getElementById('orderForm').style.display = 'none';
+                    inactiveCategoriesBox.style.display = 'none';
+                    ordersClosed.style.display = 'block';
+
+                    competitionDisplay.textContent =
+                        config.competitionDisplay || 'Aktuálně není vypsána soutěž';
+                    return;
+                }
+
+                competitionDisplay.textContent = config.competitionDisplay;
+                competitionHidden.value = config.competitionDisplay;
+
+                categorySelect.innerHTML =
+                    '<option value="" selected disabled>Vyberte kategorii</option>';
+
+                config.activeCategories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    categorySelect.appendChild(option);
+                });
+
+                if (config.inactiveCategories && config.inactiveCategories.length) {
+                    inactiveCategoriesBox.innerHTML =
+                        '<strong>Nepřijímám objednávky pro:</strong>' +
+                        config.inactiveCategories.map(x => escapeHtml(x)).join(', ');
+                    inactiveCategoriesBox.style.display = 'block';
+                } else {
+                    inactiveCategoriesBox.style.display = 'none';
+                }
+
+                document.getElementById('orderForm').style.display = 'block';
+
+            } catch (err) {
+                console.error(err);
+                loadingConfig.style.display = 'none';
+                configError.style.display = 'block';
+            } finally {
+                delete window[callbackName];
+                script.remove();
+            }
+        };
+
+        const script = document.createElement('script');
+        script.src =
+            APPS_SCRIPT_URL +
+            '?action=getConfig&callback=' +
+            encodeURIComponent(callbackName) +
+            '&_=' + Date.now();
+
+        script.onerror = function() {
+            loadingConfig.style.display = 'none';
+            configError.style.display = 'block';
+            delete window[callbackName];
+            script.remove();
+        };
+
+        document.body.appendChild(script);
+    }
+
+    function escapeHtml(value) {
+        const div = document.createElement('div');
+        div.textContent = value;
+        return div.innerHTML;
+    }
+
+    loadPublicConfig();
+
+
     const form = document.getElementById('orderForm');
     const submitBtn = document.getElementById('submitBtn');
     const confirmation = document.getElementById('confirmation');
@@ -418,8 +522,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================
     // ZOBRAZENÍ POLÍ PODLE VYBRANÉ KATEGORIE
     // =========================================
-
-    const categorySelect = document.getElementById('kategorie');
 
     categorySelect.addEventListener('change', function() {
 
@@ -515,7 +617,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // =========================================
 
             await fetch(
-                'https://script.google.com/macros/s/AKfycbysHFdWmBpfyKeNXBBCsYsWTRVsv5cLXiCeEqnc9lLYfdGYGIH8qwjQmYKbjVYjHL82Vw/exec',
+                APPS_SCRIPT_URL,
                 {
                     method: 'POST',
                     body: formData
@@ -546,6 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 3. POTVRZENÍ OBJEDNÁVKY
             // =========================================
 
+            document.getElementById('confCompetition').innerText = formData.get('tanecni_soutez');
             document.getElementById('confType').innerText = type;
             document.getElementById('confDancers').innerText = dancers;
             document.getElementById('confCategory').innerText = category;
