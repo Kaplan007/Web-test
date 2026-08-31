@@ -1,12 +1,13 @@
 <!DOCTYPE html>
+
 <html lang="cs">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex,nofollow,noarchive">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex,nofollow,noarchive" name="robots"/>
 <title>Administrace focení | ŠAPI Foto</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="style.css" rel="stylesheet"/>
 <style>
 .admin-panel {
     max-width: 720px;
@@ -74,263 +75,65 @@
     .categories { grid-template-columns:1fr; }
 }
 </style>
-</head>
+<meta content="Administrace objednávek focení Dance Nation." name="description"/><link href="https://www.sapifoto.cz/admin-foceni.html" rel="canonical"/><meta content="website" property="og:type"/><meta content="Administrace focení | ŠAPI Foto" property="og:title"/><meta content="Administrace objednávek focení Dance Nation." property="og:description"/><meta content="https://www.sapifoto.cz/admin-foceni.html" property="og:url"/><meta content="https://www.sapifoto.cz/img/2.webp" property="og:image"/><meta content="summary_large_image" name="twitter:card"/><meta content="Administrace focení | ŠAPI Foto" name="twitter:title"/><meta content="Administrace objednávek focení Dance Nation." name="twitter:description"/></head>
 <body>
 <div class="container">
 <aside class="sidebar">
-    <div class="logo"><a href="index.html"><img src="img/logo.webp" alt="Logo"></a></div>
-    <ul>
-        <li class="home"><a href="index.html"><svg viewBox="0 0 24 24"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></svg></a></li>
-        <li><a href="dnfoto.html">DN foto</a></li>
-    </ul>
-</aside>
-
+<div class="logo"><a href="index.html"><img alt="ŠAPI Foto" height="399" src="img/logo.webp" width="450"/></a></div>
+<ul>
+<li class="home"><a aria-label="Úvodní stránka" href="index.html"><svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"></path></svg></a></li>
+<li><a href="dnfoto.html">DN foto</a></li>
+</ul>
+<button aria-controls="mobileMenu" aria-expanded="false" aria-label="Otevřít hlavní menu" class="hamburger" id="hamburger" type="button"><span></span><span></span><span></span></button></aside><nav aria-label="Mobilní navigace" class="mobile-menu" id="mobileMenu"><ul><li><a href="index.html">Úvod</a></li><li><a href="dnfoto.html">DN foto</a></li></ul></nav>
 <main class="content">
 <h1>Administrace objednávek focení</h1>
-
 <div class="admin-panel">
-
-<div id="statusBox">
-    <strong>Aktuální stav:</strong> <span id="currentStatus">Načítám…</span><br>
-    <span id="currentCompetition"></span><br>
-    <span id="currentDeadline"></span>
+<div aria-live="polite" id="statusBox">
+<strong>Aktuální stav:</strong> <span id="currentStatus">Načítám…</span><br/>
+<span id="currentCompetition"></span><br/>
+<span id="currentDeadline"></span>
 </div>
-
 <div class="admin-card">
-    <label class="main-label" for="password">Administrační heslo:</label>
-    <input id="password" type="password" autocomplete="current-password">
-
-    <label class="main-label" for="competitionName">Název soutěže:</label>
-    <input id="competitionName" type="text" placeholder="např. CDO Tábor Zemská liga">
-
-    <label class="main-label" for="competitionDate">Termín konání:</label>
-    <input id="competitionDate" type="text" placeholder="např. 3. 10. 2026">
-    <p class="small">Objednávky se automaticky ukončí den před uvedeným datem ve 12:00.</p>
-
-    <label class="main-label">Kategorie, pro které přijímám objednávky:</label>
-
-    <div class="categories" id="categories">
-        <label class="category-item"><input type="checkbox" value="Sólo MINI KIDS A"> <span>Sólo MINI KIDS A</span></label>
-<label class="category-item"><input type="checkbox" value="Sólo CHILDREN C"> <span>Sólo CHILDREN C</span></label>
-<label class="category-item"><input type="checkbox" value="Sólo CHILDREN B"> <span>Sólo CHILDREN B</span></label>
-<label class="category-item"><input type="checkbox" value="Sólo CHILDREN A"> <span>Sólo CHILDREN A</span></label>
-<label class="category-item"><input type="checkbox" value="Sólo CHILDREN M"> <span>Sólo CHILDREN M</span></label>
-<label class="category-item"><input type="checkbox" value="Sólo JUNIORS C"> <span>Sólo JUNIORS C</span></label>
-<label class="category-item"><input type="checkbox" value="Sólo JUNIORS B"> <span>Sólo JUNIORS B</span></label>
-<label class="category-item"><input type="checkbox" value="Sólo JUNIORS A"> <span>Sólo JUNIORS A</span></label>
-<label class="category-item"><input type="checkbox" value="Sólo JUNIORS M"> <span>Sólo JUNIORS M</span></label>
-<label class="category-item"><input type="checkbox" value="Sólo ADULTS A"> <span>Sólo ADULTS A</span></label>
-<label class="category-item"><input type="checkbox" value="Sólo ADULTS M"> <span>Sólo ADULTS M</span></label>
-<label class="category-item"><input type="checkbox" value="Duo MINI KIDS A"> <span>Duo MINI KIDS A</span></label>
-<label class="category-item"><input type="checkbox" value="Duo CHILDREN A"> <span>Duo CHILDREN A</span></label>
-<label class="category-item"><input type="checkbox" value="Duo CHILDREN M"> <span>Duo CHILDREN M</span></label>
-<label class="category-item"><input type="checkbox" value="Duo JUNIORS A"> <span>Duo JUNIORS A</span></label>
-<label class="category-item"><input type="checkbox" value="Duo JUNIORS M"> <span>Duo JUNIORS M</span></label>
-<label class="category-item"><input type="checkbox" value="Duo ADULTS A"> <span>Duo ADULTS A</span></label>
-<label class="category-item"><input type="checkbox" value="Duo ADULTS M"> <span>Duo ADULTS M</span></label>
-    </div>
-
-    <div class="admin-actions">
-        <button type="button" id="startBtn">Spustit objednávky</button>
-        <button type="button" id="stopBtn">Zastavit objednávky</button>
-    </div>
-
-    <p class="small">
+<label class="main-label" for="password">Administrační heslo:</label>
+<input autocomplete="current-password" id="password" maxlength="100" type="password"/>
+<label class="main-label" for="competitionName">Název soutěže:</label>
+<input id="competitionName" maxlength="180" placeholder="např. CDO Tábor Zemská liga" type="text"/>
+<label class="main-label" for="competitionDate">Termín konání:</label>
+<input id="competitionDate" inputmode="numeric" maxlength="30" placeholder="např. 3. 10. 2026" type="text"/>
+<p class="small">Objednávky se automaticky ukončí den před uvedeným datem ve 12:00.</p>
+<label class="main-label">Kategorie, pro které přijímám objednávky:</label>
+<div class="categories" id="categories">
+<label class="category-item"><input type="checkbox" value="Sólo MINI KIDS A"/> <span>Sólo MINI KIDS A</span></label>
+<label class="category-item"><input type="checkbox" value="Sólo CHILDREN C"/> <span>Sólo CHILDREN C</span></label>
+<label class="category-item"><input type="checkbox" value="Sólo CHILDREN B"/> <span>Sólo CHILDREN B</span></label>
+<label class="category-item"><input type="checkbox" value="Sólo CHILDREN A"/> <span>Sólo CHILDREN A</span></label>
+<label class="category-item"><input type="checkbox" value="Sólo CHILDREN M"/> <span>Sólo CHILDREN M</span></label>
+<label class="category-item"><input type="checkbox" value="Sólo JUNIORS C"/> <span>Sólo JUNIORS C</span></label>
+<label class="category-item"><input type="checkbox" value="Sólo JUNIORS B"/> <span>Sólo JUNIORS B</span></label>
+<label class="category-item"><input type="checkbox" value="Sólo JUNIORS A"/> <span>Sólo JUNIORS A</span></label>
+<label class="category-item"><input type="checkbox" value="Sólo JUNIORS M"/> <span>Sólo JUNIORS M</span></label>
+<label class="category-item"><input type="checkbox" value="Sólo ADULTS A"/> <span>Sólo ADULTS A</span></label>
+<label class="category-item"><input type="checkbox" value="Sólo ADULTS M"/> <span>Sólo ADULTS M</span></label>
+<label class="category-item"><input type="checkbox" value="Duo MINI KIDS A"/> <span>Duo MINI KIDS A</span></label>
+<label class="category-item"><input type="checkbox" value="Duo CHILDREN A"/> <span>Duo CHILDREN A</span></label>
+<label class="category-item"><input type="checkbox" value="Duo CHILDREN M"/> <span>Duo CHILDREN M</span></label>
+<label class="category-item"><input type="checkbox" value="Duo JUNIORS A"/> <span>Duo JUNIORS A</span></label>
+<label class="category-item"><input type="checkbox" value="Duo JUNIORS M"/> <span>Duo JUNIORS M</span></label>
+<label class="category-item"><input type="checkbox" value="Duo ADULTS A"/> <span>Duo ADULTS A</span></label>
+<label class="category-item"><input type="checkbox" value="Duo ADULTS M"/> <span>Duo ADULTS M</span></label>
+</div>
+<div class="admin-actions">
+<button id="startBtn" type="button">Spustit objednávky</button>
+<button id="stopBtn" type="button">Zastavit objednávky</button>
+</div>
+<p class="small">
         Nezaškrtnuté kategorie se na veřejné stránce zobrazí pod textem
         „Nepřijímám objednávky pro:“.
     </p>
-
-    <div id="message"></div>
+<div aria-live="polite" id="message"></div>
 </div>
-
 </div>
 </main>
 </div>
-
-<script>
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysHFdWmBpfyKeNXBBCsYsWTRVsv5cLXiCeEqnc9lLYfdGYGIH8qwjQmYKbjVYjHL82Vw/exec';
-
-const passwordEl = document.getElementById('password');
-const nameEl = document.getElementById('competitionName');
-const dateEl = document.getElementById('competitionDate');
-const startBtn = document.getElementById('startBtn');
-const stopBtn = document.getElementById('stopBtn');
-const messageEl = document.getElementById('message');
-
-function setMessage(text, ok) {
-    messageEl.textContent = text;
-    messageEl.style.display = 'block';
-    messageEl.style.borderColor = ok ? '#6a9b6a' : '#c66';
-    messageEl.style.background = ok ? '#f0fff0' : '#fff0f0';
-}
-
-function checkedCategories() {
-    return Array.from(
-        document.querySelectorAll('#categories input[type="checkbox"]:checked')
-    ).map(el => el.value);
-}
-
-function applyConfig(config) {
-    document.getElementById('currentStatus').textContent =
-        config.orderingAvailable
-            ? 'OBJEDNÁVKY JSOU SPUŠTĚNÉ'
-            : (config.automaticClosed
-                ? 'OBJEDNÁVKY BYLY AUTOMATICKY UKONČENÉ'
-                : 'OBJEDNÁVKY JSOU ZASTAVENÉ');
-
-    document.getElementById('currentCompetition').textContent =
-        config.competitionDisplay || '';
-
-    document.getElementById('currentDeadline').textContent =
-        config.orderDeadlineText
-            ? 'Automatická uzávěrka: ' + config.orderDeadlineText
-            : '';
-
-    if (config.competitionName) nameEl.value = config.competitionName;
-    if (config.competitionDate) dateEl.value = config.competitionDate;
-
-    const active = new Set(config.activeCategories || []);
-    document.querySelectorAll('#categories input[type="checkbox"]').forEach(el => {
-        el.checked = active.has(el.value);
-    });
-}
-
-function loadConfig(callback) {
-    const cb = 'adminConfig_' + Date.now();
-
-    window[cb] = function(config) {
-        try {
-            applyConfig(config);
-            if (callback) callback(config);
-        } finally {
-            delete window[cb];
-            script.remove();
-        }
-    };
-
-    const script = document.createElement('script');
-    script.src =
-        APPS_SCRIPT_URL +
-        '?action=getConfig&callback=' +
-        encodeURIComponent(cb) +
-        '&_=' + Date.now();
-
-    script.onerror = function() {
-        setMessage('Nepodařilo se načíst aktuální nastavení.', false);
-        delete window[cb];
-        script.remove();
-    };
-
-    document.body.appendChild(script);
-}
-
-function postAdmin(command) {
-    const password = passwordEl.value.trim();
-
-    if (!password) {
-        setMessage('Zadejte administrační heslo.', false);
-        return;
-    }
-
-    const data = new URLSearchParams();
-    data.set('action', 'adminSave');
-    data.set('command', command);
-    data.set('password', password);
-
-    let expectedActive = false;
-    let expectedName = '';
-    let expectedDate = '';
-    let expectedCategories = [];
-
-    if (command === 'start') {
-        expectedName = nameEl.value.trim();
-        expectedDate = dateEl.value.trim();
-        expectedCategories = checkedCategories();
-        expectedActive = true;
-
-        if (!expectedName) {
-            setMessage('Zadejte název soutěže.', false);
-            return;
-        }
-
-        if (!expectedDate) {
-            setMessage('Zadejte termín konání.', false);
-            return;
-        }
-
-        if (!expectedCategories.length) {
-            setMessage('Vyberte alespoň jednu kategorii.', false);
-            return;
-        }
-
-        data.set('competitionName', expectedName);
-        data.set('competitionDate', expectedDate);
-        data.set('activeCategories', JSON.stringify(expectedCategories));
-    }
-
-    startBtn.disabled = true;
-    stopBtn.disabled = true;
-    setMessage(
-        command === 'start' ? 'Spouštím objednávky…' : 'Zastavuji objednávky…',
-        true
-    );
-
-    fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: data.toString()
-    }).then(() => {
-        // Odpověď Apps Scriptu kvůli cross-origin režimu nečteme.
-        // Změnu ověříme opětovným načtením veřejné konfigurace.
-        setTimeout(() => {
-            loadConfig(config => {
-                let success = false;
-
-                if (command === 'stop') {
-                    success = !config.active;
-                } else {
-                    const sameCategories =
-                        JSON.stringify([...(config.activeCategories || [])].sort()) ===
-                        JSON.stringify([...expectedCategories].sort());
-
-                    success =
-                        config.active &&
-                        config.competitionName === expectedName &&
-                        config.competitionDate === expectedDate &&
-                        sameCategories;
-                }
-
-                if (success) {
-                    setMessage(
-                        command === 'start'
-                            ? 'Objednávky byly spuštěny.'
-                            : 'Objednávky byly zastaveny.',
-                        true
-                    );
-                } else {
-                    setMessage(
-                        'Změna se neuložila. Zkontrolujte heslo a nasazení Apps Scriptu.',
-                        false
-                    );
-                }
-
-                startBtn.disabled = false;
-                stopBtn.disabled = false;
-            });
-        }, 1200);
-    }).catch(err => {
-        console.error(err);
-        setMessage('Požadavek se nepodařilo odeslat.', false);
-        startBtn.disabled = false;
-        stopBtn.disabled = false;
-    });
-}
-
-startBtn.addEventListener('click', () => postAdmin('start'));
-stopBtn.addEventListener('click', () => postAdmin('stop'));
-
-loadConfig();
-</script>
-</body>
+<script defer="" src="admin-foceni.js"></script><script defer="" src="main.js"></script></body>
 </html>

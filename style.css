@@ -15,7 +15,7 @@ body {
 }
 
 h1 {
-    color: #D48B42;
+    color: #A45F20;
 }
 
 
@@ -214,7 +214,7 @@ button:hover {
 /* Vysouvací menu pro mobil */
 .mobile-menu {
     position: fixed;
-    top: 60;
+    top: 60px;
     right: -240px; /* mimo obrazovku */
     width: 240px;
     height: calc(100% - 60px);
@@ -327,7 +327,7 @@ label.gdpr {
   display: flex;          /* flexbox pro řádek */
   align-items: center;    /* vertikální zarovnání checkboxu s textem */
   gap: 8px;               /* mezera mezi checkboxem a textem */
-  flex-wrap: nowrap;      /* nedovolí zalomení */
+  flex-wrap: wrap;        /* dlouhý text se může na mobilu zalomit */
 }
 
 label.gdpr input[type="checkbox"] {
@@ -338,7 +338,7 @@ label.gdpr input[type="checkbox"] {
 
 label.gdpr span {
   display: inline;        /* text zůstane vedle checkboxu */
-  white-space: nowrap;    /* zabraňuje zalomení textu */
+  white-space: normal;    /* dlouhé texty checkboxů se mohou zalomit */
   font-size: 13px;
 }
 
@@ -359,4 +359,93 @@ label.gdpr span {
   max-width:90%;
   max-height:90%;
   border-radius:8px;
+}
+
+
+/* =========================
+   PŘÍSTUPNOST A DROBNA UX
+========================= */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 3px solid #1f5f99;
+    outline-offset: 2px;
+}
+
+.hamburger {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: #111;
+}
+
+.hamburger:hover,
+.hamburger:focus-visible {
+    background: transparent;
+}
+
+.table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.form-status {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #f8f8f8;
+}
+
+.form-status.error {
+    border-color: #b54a4a;
+    background: #fff1f1;
+}
+
+.form-status.success {
+    border-color: #4f8a4f;
+    background: #f0fff0;
+}
+
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+.honeypot-field {
+    position: absolute !important;
+    left: -10000px !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+}
+
+@media (max-width: 800px) {
+    .content {
+        padding: 90px 20px 35px;
+    }
+
+    #orderTable {
+        min-width: 620px;
+    }
+
+    label.gdpr {
+        align-items: flex-start;
+        flex-wrap: nowrap;
+    }
+
+    label.gdpr span {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
 }
