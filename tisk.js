@@ -25,14 +25,30 @@ document.addEventListener('DOMContentLoaded', function () {
     return 'prt_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 18);
   }
 
+  function makePaymentVs() {
+    // 9místný číselný VS. Při dostupném Web Crypto má velmi nízkou
+    // pravděpodobnost kolize; backend jej ještě kontroluje proti tabulce.
+    if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+      const values = new Uint32Array(1);
+      window.crypto.getRandomValues(values);
+      return String(100000000 + (values[0] % 900000000));
+    }
+    return String(Math.floor(100000000 + Math.random() * 900000000));
+  }
+
   function jsonp(action, params, timeoutMs) {
     return new Promise(function (resolve, reject) {
       const callbackName = 'printCb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
       const script = document.createElement('script');
+      let callbackCalled = false;
+      let settled = false;
+
       const timer = window.setTimeout(function () {
+        if (settled) return;
+        settled = true;
         cleanup();
         reject(new Error('Server neodpověděl včas.'));
-      }, timeoutMs || 8000);
+      }, timeoutMs || 15000);
 
       function cleanup() {
         window.clearTimeout(timer);
@@ -41,6 +57,9 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       window[callbackName] = function (payload) {
+        if (settled) return;
+        callbackCalled = true;
+        settled = true;
         cleanup();
         resolve(payload);
       };
@@ -53,8 +72,17 @@ document.addEventListener('DOMContentLoaded', function () {
       script.src = APPS_SCRIPT_URL + '?' + query.toString();
       script.async = true;
       script.onerror = function () {
+        if (settled) return;
+        settled = true;
         cleanup();
         reject(new Error('Nepodařilo se spojit se serverem.'));
+      };
+      script.onload = function () {
+        if (!callbackCalled && !settled) {
+          settled = true;
+          cleanup();
+          reject(new Error('Server vrátil neočekávanou odpověď.'));
+        }
       };
       document.body.appendChild(script);
     });
@@ -62,14 +90,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
   async function pollOrderStatus(requestId, maxMs) {
     const start = Date.now();
-    while (Date.now() - start < (maxMs || 30000)) {
-      const response = await jsonp('getStatus', { requestId: requestId }, 7000);
-      if (response && response.status === 'OK' && response.requestStatus && response.requestStatus.state === 'DONE') {
-        return response.requestStatus;
+    let lastError = null;
+
+    while (Date.now() - start < (maxMs || 60000)) {
+      try {
+        const response = await jsonp('getStatus', { requestId: requestId }, 15000);
+        if (response && response.status === 'OK' && response.requestStatus && response.requestStatus.state === 'DONE') {
+          return response.requestStatus;
+        }
+        if (response && response.status === 'ERROR') {
+          lastError = new Error(response.message || 'Server odmítl ověření objednávky.');
+        }
+      } catch (error) {
+        lastError = error;
       }
-      await new Promise(function (resolve) { window.setTimeout(resolve, 650); });
+
+      await new Promise(function (resolve) { window.setTimeout(resolve, 1200); });
     }
-    throw new Error('Výsledek objednávky se nepodařilo včas ověřit.');
+
+    throw lastError || new Error('Výsledek objednávky se nepodařilo včas ověřit.');
   }
 
   function showError(message, uncertain) {
@@ -138,11 +177,8 @@ document.addEventListener('DOMContentLoaded', function () {
     formData.forEach(function (value, key) {
       if (typeof value === 'string') params.append(key, value);
     });
-    // VS a cena vznikají až na serveru. Netlify ukládá pouze vstupní
-    // PENDING zálohu a neslouží jako důkaz přijetí objednávky.
-    params.set('order_number', '');
-    params.set('total_price', '');
-    params.set('order_summary', '');
+    // Netlify ukládá kompletní záložní kopii včetně klientem vytvořeného
+    // VS, souhrnu a částky. Backend cenu i položky nezávisle přepočítá.
     params.set('server_status', 'PENDING');
     params.set('client_mail_sent', 'NEOVĚŘENO');
     return params;
@@ -182,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function () {
     this.setAttribute('aria-expanded', open ? 'false' : 'true');
   });
 
-  form.addEventListener('submit', async function (event) {
+  form.addEventListener('submit', function (event) {
     event.preventDefault();
     if (submitting) return;
     hideError();
@@ -196,60 +232,81 @@ document.addEventListener('DOMContentLoaded', function () {
 
     submitting = true;
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Ověřuji objednávku…';
 
-    try {
-      const requestId = makeRequestId();
-      document.getElementById('request_id').value = requestId;
-      document.getElementById('items_json').value = JSON.stringify(items);
+    const requestId = makeRequestId();
+    const vs = makePaymentVs();
+    let total = 0;
+    let summaryText = '';
 
-      const formData = new FormData(form);
+    items.forEach(function (item, index) {
+      total += prices[item.format] * item.quantity;
+      summaryText += (index + 1) + '. ' + item.photoNumber + ' / ' + item.format + ' / ' + item.quantity + ' ks\n';
+    });
 
-      fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: formData,
-        keepalive: true
-      }).catch(function (error) { console.error('Apps Script POST:', error); });
+    document.getElementById('request_id').value = requestId;
+    document.getElementById('items_json').value = JSON.stringify(items);
+    document.getElementById('order_number').value = vs;
+    document.getElementById('total_price').value = String(total);
+    document.getElementById('order_summary').value = summaryText;
 
-      // Netlify dostane vstupní zálohu okamžitě, ale platební údaje se
-      // zobrazí až po potvrzení skutečně uložené objednávky Apps Scriptem.
-      fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: toNetlifyBackupParams(formData).toString(),
-        keepalive: true
-      }).catch(function (error) { console.error('Netlify backup:', error); });
+    const formData = new FormData(form);
 
-      const status = await pollOrderStatus(requestId, 30000);
-      if (!status.accepted) throw new Error(status.message || 'Objednávka byla serverem odmítnuta.');
+    // 1) Apps Script – fire-and-forget. Server položky a cenu sám ověří.
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: formData,
+      keepalive: true
+    }).catch(function (error) {
+      console.error('Apps Script POST:', error);
+    });
 
-      document.getElementById('order_number').value = status.orderNumber || '';
-      document.getElementById('total_price').value = String(status.total || '');
-      document.getElementById('order_summary').value = status.summary || '';
+    // 2) Netlify – kompletní nezávislá záloha objednávky včetně VS.
+    fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: toNetlifyBackupParams(formData).toString(),
+      keepalive: true
+    }).catch(function (error) {
+      console.error('Netlify backup:', error);
+    });
 
-      document.getElementById('confOrderNum').textContent = status.orderNumber || '—';
-      document.getElementById('confSummary').textContent = status.summary || '';
-      document.getElementById('confVS').textContent = status.orderNumber || '—';
-      document.getElementById('confAmount').textContent = String(status.total || '');
+    // 3) Potvrzení + QR – OKAMŽITĚ.
+    document.getElementById('confOrderNum').textContent = vs;
+    document.getElementById('confSummary').textContent = summaryText;
+    document.getElementById('confVS').textContent = vs;
+    document.getElementById('confAmount').textContent = String(total);
+    document.getElementById('confEmailStatus').textContent = 'Potvrzení objednávky obdržíte také e-mailem.';
+
+    showQr(total, vs);
+    form.style.display = 'none';
+    confirmation.style.display = 'block';
+    confirmation.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // 4) Tiché ověření na pozadí. Timeout se zákazníkovi nikdy nezobrazuje.
+    pollOrderStatus(requestId, 60000).then(function (status) {
+      if (!status || !status.accepted) {
+        document.getElementById('confEmailStatus').textContent =
+          'Objednávku se nepodařilo automaticky potvrdit na serveru. Pokud vám nepřijde potvrzovací e-mail, kontaktujte prosím ŠAPI Foto před platbou.';
+        return;
+      }
+
+      // Backend má použít stejný VS. Kdyby nastala extrémně nepravděpodobná
+      // kolize a číslo se lišilo, aktualizujeme platební údaje i QR.
+      const confirmedVs = status.orderNumber || vs;
+      const confirmedTotal = Number(status.total) || total;
+      if (confirmedVs !== vs || confirmedTotal !== total) {
+        document.getElementById('confOrderNum').textContent = confirmedVs;
+        document.getElementById('confVS').textContent = confirmedVs;
+        document.getElementById('confAmount').textContent = String(confirmedTotal);
+        showQr(confirmedTotal, confirmedVs);
+      }
+
       document.getElementById('confEmailStatus').textContent = status.clientMailSent
         ? 'Potvrzení objednávky bylo odesláno na váš e-mail.'
-        : 'Objednávka je bezpečně uložená, ale potvrzovací e-mail se nepodařilo odeslat. Poznamenejte si číslo objednávky / VS.';
-
-      showQr(status.total, status.orderNumber);
-      form.style.display = 'none';
-      confirmation.style.display = 'block';
-      confirmation.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    } catch (error) {
-      console.error(error);
-      const uncertain = /včas ověřit|neodpověděl|spojit se serverem/i.test(error.message || '');
-      showError(error.message || 'Objednávku se nepodařilo dokončit.', uncertain);
-      if (!uncertain) {
-        submitting = false;
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Odeslat objednávku';
-      }
-    }
+        : 'Objednávka byla přijata. Pokud potvrzovací e-mail nepřijde, není nutné objednávku posílat znovu.';
+    }).catch(function (error) {
+      console.warn('Ověření stavu objednávky tisku:', error);
+    });
   });
 });

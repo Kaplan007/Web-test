@@ -34,10 +34,15 @@ document.addEventListener('DOMContentLoaded', function () {
     return new Promise(function (resolve, reject) {
       const callbackName = 'sapi_' + Date.now() + '_' + Math.random().toString(36).slice(2);
       const script = document.createElement('script');
+      let callbackCalled = false;
+      let settled = false;
+
       const timeout = window.setTimeout(function () {
+        if (settled) return;
+        settled = true;
         cleanup();
         reject(new Error('Server neodpověděl včas.'));
-      }, timeoutMs || 8000);
+      }, timeoutMs || 15000);
 
       function cleanup() {
         window.clearTimeout(timeout);
@@ -46,6 +51,9 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       window[callbackName] = function (payload) {
+        if (settled) return;
+        callbackCalled = true;
+        settled = true;
         cleanup();
         resolve(payload);
       };
@@ -59,8 +67,17 @@ document.addEventListener('DOMContentLoaded', function () {
       script.src = APPS_SCRIPT_URL + '?' + query.toString();
       script.async = true;
       script.onerror = function () {
+        if (settled) return;
+        settled = true;
         cleanup();
         reject(new Error('Nepodařilo se spojit se serverem.'));
+      };
+      script.onload = function () {
+        if (!callbackCalled && !settled) {
+          settled = true;
+          cleanup();
+          reject(new Error('Server vrátil neočekávanou odpověď.'));
+        }
       };
       document.body.appendChild(script);
     });
@@ -68,15 +85,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
   async function pollOrderStatus(requestId, maxMs) {
     const started = Date.now();
-    while (Date.now() - started < (maxMs || 30000)) {
-      const response = await jsonp('getStatus', { requestId: requestId }, 7000);
-      if (response && response.status === 'OK' && response.requestStatus) {
-        const status = response.requestStatus;
-        if (status.state === 'DONE') return status;
+    let lastError = null;
+
+    while (Date.now() - started < (maxMs || 60000)) {
+      try {
+        const response = await jsonp('getStatus', { requestId: requestId }, 15000);
+        if (response && response.status === 'OK' && response.requestStatus) {
+          const status = response.requestStatus;
+          if (status.state === 'DONE') return status;
+        } else if (response && response.status === 'ERROR') {
+          lastError = new Error(response.message || 'Server odmítl ověření objednávky.');
+        }
+      } catch (error) {
+        // Jednotlivý timeout nebo krátký výpadek Apps Scriptu není důvod
+        // ukončit celý proces. Stav zkusíme znovu až do celkového limitu.
+        lastError = error;
       }
-      await new Promise(function (resolve) { window.setTimeout(resolve, 650); });
+
+      await new Promise(function (resolve) { window.setTimeout(resolve, 1200); });
     }
-    throw new Error('Výsledek objednávky se nepodařilo včas ověřit.');
+
+    throw lastError || new Error('Výsledek objednávky se nepodařilo včas ověřit.');
   }
 
   function showError(message, uncertain) {
@@ -206,85 +235,89 @@ document.addEventListener('DOMContentLoaded', function () {
 
   categorySelect.addEventListener('change', updateDancerFields);
 
-  form.addEventListener('submit', async function (event) {
+  form.addEventListener('submit', function (event) {
     event.preventDefault();
     if (submitting) return;
     hideError();
 
     if (!form.reportValidity()) return;
 
+    // Formulář je veřejně zobrazen pouze při aktivní konfiguraci.
+    // Při odeslání už znovu nečekáme na síťový dotaz – klient dostane
+    // potvrzení okamžitě. Backend si aktuální stav i uzávěrku ověří sám.
+    if (latestConfig && !latestConfig.orderingAvailable) {
+      renderConfig(latestConfig);
+      showError('Objednávání již není dostupné.', false);
+      return;
+    }
+
     submitting = true;
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Ověřuji objednávku…';
 
-    try {
-      const config = await loadPublicConfig(true);
-      if (!config.orderingAvailable) {
-        renderConfig(config);
-        throw new Error('Objednávání již není dostupné.');
+    const requestId = makeRequestId();
+    document.getElementById('request_id').value = requestId;
+    const formData = new FormData(form);
+
+    const category = formData.get('kategorie') || '';
+    const type = category.indexOf('Sólo ') === 0 ? 'Sólo' : 'Duo';
+    const dancers = type === 'Sólo'
+      ? (formData.get('tanecnice_solo') || '')
+      : (formData.get('tanecnice_duo_1') || '') + ' + ' + (formData.get('tanecnice_duo_2') || '');
+
+    // 1) Apps Script – fire-and-forget. Nečekáme na odpověď.
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: formData,
+      keepalive: true
+    }).catch(function (error) {
+      console.error('Apps Script POST:', error);
+    });
+
+    // 2) Netlify Forms – nezávislá záloha stejných vstupních dat.
+    fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: netlifyBackupParams(formData).toString(),
+      keepalive: true
+    }).catch(function (error) {
+      console.error('Netlify backup:', error);
+    });
+
+    // 3) Potvrzení uživateli – OKAMŽITĚ, bez čekání na server.
+    document.getElementById('confCompetition').textContent = formData.get('tanecni_soutez') || '';
+    document.getElementById('confType').textContent = type;
+    document.getElementById('confDancers').textContent = dancers;
+    document.getElementById('confCategory').textContent = category;
+    document.getElementById('confEmailStatus').textContent = 'Potvrzení objednávky obdržíte také e-mailem.';
+    document.getElementById('confOrderLine').style.display = 'none';
+
+    form.style.display = 'none';
+    confirmation.style.display = 'block';
+    confirmation.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // 4) Stav ověříme pouze tiše na pozadí. Na nic se nečeká a timeout
+    // se zákazníkovi nezobrazuje. Pokud server odpoví, doplníme číslo
+    // objednávky a skutečný stav e-mailu.
+    pollOrderStatus(requestId, 60000).then(function (status) {
+      if (!status || !status.accepted) {
+        document.getElementById('confEmailStatus').textContent =
+          'Objednávku se nepodařilo automaticky potvrdit na serveru. Pokud vám nepřijde potvrzovací e-mail, kontaktujte prosím ŠAPI Foto.';
+        return;
       }
 
-      const requestId = makeRequestId();
-      document.getElementById('request_id').value = requestId;
-      const formData = new FormData(form);
-
-      // Hlavní objednávka – odpověď kvůli cross-origin nečteme přímo.
-      // Skutečný výsledek ověříme přes bezpečný JSONP status requestu.
-      fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: formData,
-        keepalive: true
-      }).catch(function (error) {
-        console.error('Apps Script POST:', error);
-      });
-
-      // Nezávislá Netlify záloha vzniká hned. Stav objednávky v UI ale
-      // určuje výhradně následně ověřený Apps Script.
-      fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: netlifyBackupParams(formData).toString(),
-        keepalive: true
-      }).catch(function (error) {
-        console.error('Netlify backup:', error);
-      });
-
-      const status = await pollOrderStatus(requestId, 30000);
-
-      if (!status.accepted) {
-        throw new Error(status.message || 'Objednávka byla serverem odmítnuta.');
+      if (status.orderNumber) {
+        document.getElementById('confOrderNum').textContent = status.orderNumber;
+        document.getElementById('confOrderLine').style.display = 'block';
       }
 
-      const category = formData.get('kategorie') || '';
-      const type = category.indexOf('Sólo ') === 0 ? 'Sólo' : 'Duo';
-      const dancers = type === 'Sólo'
-        ? (formData.get('tanecnice_solo') || '')
-        : (formData.get('tanecnice_duo_1') || '') + ' + ' + (formData.get('tanecnice_duo_2') || '');
-
-      document.getElementById('confOrderNum').textContent = status.orderNumber || '—';
-      document.getElementById('confCompetition').textContent = formData.get('tanecni_soutez') || '';
-      document.getElementById('confType').textContent = type;
-      document.getElementById('confDancers').textContent = dancers;
-      document.getElementById('confCategory').textContent = category;
       document.getElementById('confEmailStatus').textContent = status.clientMailSent
         ? 'Potvrzení objednávky bylo odesláno na váš e-mail.'
-        : 'Objednávka je bezpečně uložená, ale potvrzovací e-mail se nepodařilo odeslat. Poznamenejte si číslo objednávky.';
-
-      form.style.display = 'none';
-      confirmation.style.display = 'block';
-      confirmation.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    } catch (error) {
-      console.error(error);
-      const uncertain = /včas ověřit|neodpověděl|spojit se serverem/i.test(error.message || '');
-      showError(error.message || 'Objednávku se nepodařilo odeslat.', uncertain);
-      if (!uncertain) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Odeslat objednávku';
-        submitting = false;
-      }
-    }
+        : 'Objednávka byla přijata. Pokud potvrzovací e-mail nepřijde, není nutné objednávku posílat znovu.';
+    }).catch(function (error) {
+      // Síťové ověření je pouze doplňkové. Timeout nesmí kazit UX.
+      console.warn('Ověření stavu DN objednávky:', error);
+    });
   });
 
   loadPublicConfig(false).catch(function () {});

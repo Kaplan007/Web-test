@@ -275,7 +275,7 @@ button:disabled {
             podmínkami služby
         </a>
 </span>
-</label><label class="gdpr"><input id="earlyStartConsent" name="zahajeni_pred_14_dny" required="" type="checkbox" value="ano"/><span>Výslovně žádám, aby poskytování objednané služby mohlo být zahájeno před uplynutím 14denní lhůty pro odstoupení od smlouvy, a beru na vědomí důsledky uvedené v podmínkách služby.</span></label>
+</label>
 <br/>
 <button id="submitBtn" type="submit">
     Odeslat objednávku
@@ -284,12 +284,12 @@ button:disabled {
 </form>
 <!-- POTVRZENÍ OBJEDNÁVKY -->
 <div id="confirmation">
-<h2>Objednávka byla přijata</h2>
+<h2>Objednávka byla odeslána</h2>
 <p>
         Děkujeme za objednávku focení.
     </p>
 <p><span id="confEmailStatus"></span></p>
-<p><strong>Číslo objednávky: <span id="confOrderNum"></span></strong></p><p>
+<p id="confOrderLine" style="display:none;"><strong>Číslo objednávky: <span id="confOrderNum"></span></strong></p><p>
 <strong>Taneční soutěž:</strong>
 <span id="confCompetition"></span>
 <br/>

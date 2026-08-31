@@ -50,10 +50,15 @@ document.addEventListener('DOMContentLoaded', function () {
     return new Promise(function (resolve, reject) {
       const callbackName = 'adminCb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
       const script = document.createElement('script');
+      let callbackCalled = false;
+      let settled = false;
+
       const timer = window.setTimeout(function () {
+        if (settled) return;
+        settled = true;
         cleanup();
         reject(new Error('Server neodpověděl včas.'));
-      }, timeoutMs || 8000);
+      }, timeoutMs || 15000);
 
       function cleanup() {
         window.clearTimeout(timer);
@@ -62,6 +67,9 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       window[callbackName] = function (payload) {
+        if (settled) return;
+        callbackCalled = true;
+        settled = true;
         cleanup();
         resolve(payload);
       };
@@ -74,8 +82,17 @@ document.addEventListener('DOMContentLoaded', function () {
       script.src = APPS_SCRIPT_URL + '?' + query.toString();
       script.async = true;
       script.onerror = function () {
+        if (settled) return;
+        settled = true;
         cleanup();
         reject(new Error('Nepodařilo se spojit se serverem.'));
+      };
+      script.onload = function () {
+        if (!callbackCalled && !settled) {
+          settled = true;
+          cleanup();
+          reject(new Error('Server vrátil neočekávanou odpověď.'));
+        }
       };
       document.body.appendChild(script);
     });
@@ -101,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   async function loadConfig() {
-    const config = await jsonp('getConfig', {}, 8000);
+    const config = await jsonp('getConfig', {}, 15000);
     if (!config || config.status !== 'OK') throw new Error('Nepodařilo se načíst aktuální konfiguraci.');
     applyConfig(config);
     return config;
@@ -109,14 +126,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
   async function pollAdminStatus(requestId, maxMs) {
     const start = Date.now();
-    while (Date.now() - start < (maxMs || 20000)) {
-      const response = await jsonp('getAdminStatus', { requestId: requestId }, 7000);
-      if (response && response.status === 'OK' && response.requestStatus && response.requestStatus.state === 'DONE') {
-        return response.requestStatus;
+    let lastError = null;
+
+    while (Date.now() - start < (maxMs || 45000)) {
+      try {
+        const response = await jsonp('getAdminStatus', { requestId: requestId }, 15000);
+        if (response && response.status === 'OK' && response.requestStatus && response.requestStatus.state === 'DONE') {
+          return response.requestStatus;
+        }
+        if (response && response.status === 'ERROR') {
+          lastError = new Error(response.message || 'Server odmítl ověření změny.');
+        }
+      } catch (error) {
+        lastError = error;
       }
-      await new Promise(function (resolve) { window.setTimeout(resolve, 600); });
+      await new Promise(function (resolve) { window.setTimeout(resolve, 1200); });
     }
-    throw new Error('Výsledek změny se nepodařilo ověřit včas.');
+    throw lastError || new Error('Výsledek změny se nepodařilo ověřit včas.');
   }
 
   async function postAdmin(command) {
@@ -170,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function () {
         keepalive: true
       }).catch(function (error) { console.error('Admin POST:', error); });
 
-      const result = await pollAdminStatus(requestId, 20000);
+      const result = await pollAdminStatus(requestId, 45000);
       if (!result.ok) throw new Error(result.message || 'Změna nebyla uložena.');
 
       await loadConfig();
