@@ -321,9 +321,5 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   loadPublicConfig(false).catch(function () {});
-  window.setInterval(function () {
-    if (!submitting && confirmation.style.display !== 'block') {
-      loadPublicConfig(true).catch(function () {});
-    }
-  }, 30000);
+  
 });
