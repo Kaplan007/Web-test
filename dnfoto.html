@@ -663,67 +663,63 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
-        try {
-
-            // =========================================
-            // 1. GOOGLE APPS SCRIPT
-            // =========================================
-
-            await fetch(
-                APPS_SCRIPT_URL,
-                {
-                    method: 'POST',
-                    body: formData
-                }
-            );
-
-
-            // =========================================
-            // 2. NETLIFY FORMS
-            // =========================================
-
-            await fetch('/', {
-
+        // =========================================
+        // 1. GOOGLE APPS SCRIPT
+        // =========================================
+        // Fire-and-forget: objednávku předáme prohlížeči k odeslání,
+        // ale nečekáme na odpověď Apps Scriptu. Tím se zabrání falešné
+        // chybě při pomalé nebo cross-origin odpovědi.
+        fetch(
+            APPS_SCRIPT_URL,
+            {
                 method: 'POST',
-
-                headers: {
-                    'Content-Type':
-                    'application/x-www-form-urlencoded'
-                },
-
-                body:
-                    new URLSearchParams(formData).toString()
-
-            });
+                body: formData,
+                keepalive: true
+            }
+        ).catch(error => {
+            console.error('Google Apps Script:', error);
+        });
 
 
-            // =========================================
-            // 3. POTVRZENÍ OBJEDNÁVKY
-            // =========================================
+        // =========================================
+        // 2. NETLIFY FORMS – ZÁLOŽNÍ ULOŽENÍ
+        // =========================================
+        // Ani případná chyba Netlify nesmí blokovat potvrzení objednávky.
+        fetch('/', {
 
-            document.getElementById('confCompetition').innerText = formData.get('tanecni_soutez');
-            document.getElementById('confType').innerText = type;
-            document.getElementById('confDancers').innerText = dancers;
-            document.getElementById('confCategory').innerText = category;
+            method: 'POST',
 
-            form.style.display = 'none';
-            confirmation.style.display = 'block';
+            headers: {
+                'Content-Type':
+                'application/x-www-form-urlencoded'
+            },
 
-            confirmation.scrollIntoView({
-                behavior: 'smooth'
-            });
+            body:
+                new URLSearchParams(formData).toString(),
+
+            keepalive: true
+
+        }).catch(error => {
+            console.error('Netlify Forms:', error);
+        });
 
 
-        } catch (error) {
+        // =========================================
+        // 3. POTVRZENÍ OBJEDNÁVKY
+        // =========================================
+        // Zobrazí se ihned po předání obou požadavků prohlížeči.
 
-            console.error(error);
+        document.getElementById('confCompetition').innerText = formData.get('tanecni_soutez');
+        document.getElementById('confType').innerText = type;
+        document.getElementById('confDancers').innerText = dancers;
+        document.getElementById('confCategory').innerText = category;
 
-            errorMessage.style.display = 'block';
+        form.style.display = 'none';
+        confirmation.style.display = 'block';
 
-            submitBtn.disabled = false;
-            submitBtn.innerText = 'Odeslat objednávku';
-
-        }
+        confirmation.scrollIntoView({
+            behavior: 'smooth'
+        });
 
     });
 
