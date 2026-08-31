@@ -129,6 +129,21 @@ button:disabled {
     display: block;
     margin: 3px 0;
 }
+
+#orderDeadlineInfo {
+    display: none;
+    margin: 0 0 22px;
+    padding: 14px 16px;
+    border: 1px solid #d9d9d9;
+    border-radius: 7px;
+    background: #f7f7f7;
+    line-height: 1.55;
+}
+
+#orderDeadlineInfo strong {
+    font-weight: 600;
+}
+
 </style>
 </head>
 
@@ -193,12 +208,21 @@ button:disabled {
     </p>
 
     <div class="cena">
-        Cena: 250 Kč za 1 sólo nebo 1 duo
+        Cena: 200 Kč za 1 sólo nebo 1 duo
     </div>
+
+<p>
+        <strong><a href="dninfo.html" target="_blank">
+            Přehledné informace o službě
+        </a>
+</strong><br>
+        
+    </p>
+
 
     <p>
         <strong><a href="podminkydnfoto.html" target="_blank">
-            Podmínky služby
+            Kompletní podmínky služby
         </a>
 </strong><br>
         
@@ -218,6 +242,10 @@ button:disabled {
 
 <div id="inactiveCategories" style="display:none;"></div>
 
+<div id="orderDeadlineInfo">
+    Objednání je možné do <strong id="orderDeadlineText"></strong>.
+</div>
+
 <form
     name="foceni-form"
     method="POST"
@@ -227,7 +255,7 @@ button:disabled {
 
 <!-- SKRYTÉ ÚDAJE -->
 <input type="hidden" name="form-name" value="foceni-form">
-<input type="hidden" name="cena" value="250 Kč">
+<input type="hidden" name="cena" value="200 Kč">
 <input type="hidden" name="tanecni_soutez" id="tanecni_soutez" value="">
 
 
@@ -407,7 +435,7 @@ button:disabled {
         <br>
 
         <strong>Cena:</strong>
-        250 Kč
+        200 Kč
     </p>
 
     <div class="confirmation-buttons">
@@ -430,6 +458,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const inactiveCategoriesBox = document.getElementById('inactiveCategories');
     const competitionDisplay = document.getElementById('competitionDisplay');
     const competitionHidden = document.getElementById('tanecni_soutez');
+    const orderDeadlineInfo = document.getElementById('orderDeadlineInfo');
+    const orderDeadlineText = document.getElementById('orderDeadlineText');
     const categorySelect = document.getElementById('kategorie');
 
     function loadPublicConfig() {
@@ -446,7 +476,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!config.orderingAvailable) {
                     document.getElementById('orderForm').style.display = 'none';
                     inactiveCategoriesBox.style.display = 'none';
+                    orderDeadlineInfo.style.display = 'none';
                     ordersClosed.style.display = 'block';
+
+                    if (config.automaticClosed) {
+                        ordersClosed.innerHTML =
+                            '<strong>Objednávání focení pro tuto soutěž bylo ukončeno.</strong><br>' +
+                            'Objednávky byly přijímány do ' +
+                            escapeHtml(config.orderDeadlineText) + '.';
+                    } else {
+                        ordersClosed.innerHTML =
+                            '<strong>Možnost objednání bude spuštěna po zveřejnění harmonogramu následující soutěže.</strong>';
+                    }
 
                     competitionDisplay.textContent =
                         config.competitionDisplay || 'Aktuálně není vypsána soutěž';
@@ -455,6 +496,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 competitionDisplay.textContent = config.competitionDisplay;
                 competitionHidden.value = config.competitionDisplay;
+
+                orderDeadlineText.textContent = config.orderDeadlineText || '';
+                orderDeadlineInfo.style.display =
+                    config.orderDeadlineText ? 'block' : 'none';
 
                 categorySelect.innerHTML =
                     '<option value="" selected disabled>Vyberte kategorii</option>';
@@ -513,6 +558,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadPublicConfig();
+    setInterval(loadPublicConfig, 30000);
 
 
     const form = document.getElementById('orderForm');

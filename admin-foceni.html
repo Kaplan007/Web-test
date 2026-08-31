@@ -92,7 +92,8 @@
 
 <div id="statusBox">
     <strong>Aktuální stav:</strong> <span id="currentStatus">Načítám…</span><br>
-    <span id="currentCompetition"></span>
+    <span id="currentCompetition"></span><br>
+    <span id="currentDeadline"></span>
 </div>
 
 <div class="admin-card">
@@ -104,6 +105,7 @@
 
     <label class="main-label" for="competitionDate">Termín konání:</label>
     <input id="competitionDate" type="text" placeholder="např. 3. 10. 2026">
+    <p class="small">Objednávky se automaticky ukončí den před uvedeným datem ve 12:00.</p>
 
     <label class="main-label">Kategorie, pro které přijímám objednávky:</label>
 
@@ -170,10 +172,19 @@ function checkedCategories() {
 
 function applyConfig(config) {
     document.getElementById('currentStatus').textContent =
-        config.orderingAvailable ? 'OBJEDNÁVKY JSOU SPUŠTĚNÉ' : 'OBJEDNÁVKY JSOU ZASTAVENÉ';
+        config.orderingAvailable
+            ? 'OBJEDNÁVKY JSOU SPUŠTĚNÉ'
+            : (config.automaticClosed
+                ? 'OBJEDNÁVKY BYLY AUTOMATICKY UKONČENÉ'
+                : 'OBJEDNÁVKY JSOU ZASTAVENÉ');
 
     document.getElementById('currentCompetition').textContent =
         config.competitionDisplay || '';
+
+    document.getElementById('currentDeadline').textContent =
+        config.orderDeadlineText
+            ? 'Automatická uzávěrka: ' + config.orderDeadlineText
+            : '';
 
     if (config.competitionName) nameEl.value = config.competitionName;
     if (config.competitionDate) dateEl.value = config.competitionDate;
