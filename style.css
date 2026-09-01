@@ -479,7 +479,8 @@ select:focus-visible {
 form[name="tisk-form"] #printName,
 form[name="tisk-form"] #printEmail,
 form[name="tisk-form"] #printPhone {
-    width: 100%;
+    display: block;
+	width: 100%;
     max-width: 380px;
 }
 
