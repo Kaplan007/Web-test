@@ -17,7 +17,8 @@
 .provider-box,
 .important-box,
 .adr-box,
-.withdrawal-box {
+.withdrawal-box,
+.order-box {
     margin: 22px 0;
     padding: 20px 22px;
     border: 1px solid #dedede;
@@ -27,6 +28,34 @@
 
 .provider-box {
     background: #fff;
+}
+
+.order-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.order-box p {
+    margin: 0;
+}
+
+.order-box a {
+    display: inline-block;
+    flex: 0 0 auto;
+    padding: 11px 17px;
+    border-radius: 6px;
+    background: #222;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    border: 1px solid #222;
+}
+
+.order-box a:hover,
+.order-box a:focus-visible {
+    background: #444;
 }
 
 .provider-grid {
@@ -118,11 +147,23 @@
         margin-top: 9px;
     }
 
+    .order-box {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .order-box a {
+        text-align: center;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
     .terms-intro,
     .provider-box,
     .important-box,
     .adr-box,
-    .withdrawal-box {
+    .withdrawal-box,
+    .order-box {
         padding: 17px;
     }
 }
@@ -171,6 +212,11 @@
 <main class="content">
 <h1>Podmínky služby – focení tanečních soutěží Dance Nation</h1>
 <div class="terms">
+<div class="order-box">
+<p>Chcete pokračovat k objednávce focení?</p>
+<a href="dnfoto.html">Objednat focení</a>
+</div>
+
 <div class="terms-intro">
 <p>
             Tyto podmínky upravují poskytování služby spočívající v pořízení,
