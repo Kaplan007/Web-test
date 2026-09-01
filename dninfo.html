@@ -13,16 +13,60 @@
 }
 
 .hero-box {
+    position: relative;
+    min-height: 390px;
     margin: 5px 0 28px;
-    padding: 28px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #f7f7f7, #ffffff);
-    border: 1px solid #e2e2e2;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #111;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+}
+
+.hero-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.78) 0%,
+            rgba(0, 0, 0, 0.55) 38%,
+            rgba(0, 0, 0, 0.18) 70%,
+            rgba(0, 0, 0, 0.04) 100%
+        );
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    box-sizing: border-box;
+    max-width: 680px;
+    padding: 34px;
+    color: #fff;
+}
+
+.hero-content h1 {
+    margin: 0 0 16px;
+    font-size: clamp(30px, 4vw, 46px);
+    line-height: 1.08;
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
 }
 
 .hero-box .lead {
+    max-width: 610px;
     font-size: 18px;
+    line-height: 1.65;
     margin: 0 0 18px;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
 }
 
 .hero-actions {
@@ -46,6 +90,24 @@
 .bottom-actions a.primary {
     background: #222;
     color: #fff;
+}
+
+.hero-box .hero-actions a.primary {
+    background: #fff;
+    color: #111;
+    border-color: #fff;
+}
+
+.hero-box .hero-actions a.secondary {
+    background: rgba(0, 0, 0, 0.34);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(4px);
+}
+
+.hero-box .hero-actions a:hover,
+.hero-box .hero-actions a:focus-visible {
+    transform: translateY(-1px);
 }
 
 .hero-actions a.secondary,
@@ -174,6 +236,15 @@
 }
 
 @media (max-width: 900px) {
+    .hero-box {
+        min-height: 340px;
+    }
+
+    .hero-content {
+        padding: 28px;
+        max-width: 600px;
+    }
+
     .quick-facts {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -189,7 +260,39 @@
 
 @media (max-width: 520px) {
     .hero-box {
+        min-height: 0;
+        display: block;
+        background: #151515;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+    }
+
+    .hero-image {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
+    }
+
+    .hero-overlay {
+        display: none;
+    }
+
+    .hero-content {
+        max-width: none;
         padding: 20px;
+    }
+
+    .hero-content h1 {
+        font-size: 28px;
+        line-height: 1.12;
+        margin-bottom: 12px;
+    }
+
+    .hero-box .lead {
+        font-size: 16px;
+        line-height: 1.55;
     }
 
     .quick-facts {
@@ -217,7 +320,7 @@
     }
 }
 </style>
-<meta content="Informace k objednávkovému focení sólo a duo na soutěžích Dance Nation." name="description"/><link href="https://www.sapifoto.cz/dninfo.html" rel="canonical"/><meta content="website" property="og:type"/><meta content="Focení Dance Nation | ŠAPI Foto" property="og:title"/><meta content="Informace k objednávkovému focení sólo a duo na soutěžích Dance Nation." property="og:description"/><meta content="https://www.sapifoto.cz/dninfo.html" property="og:url"/><meta content="https://www.sapifoto.cz/img/2.webp" property="og:image"/><meta content="summary_large_image" name="twitter:card"/><meta content="Focení Dance Nation | ŠAPI Foto" name="twitter:title"/><meta content="Informace k objednávkovému focení sólo a duo na soutěžích Dance Nation." name="twitter:description"/></head>
+<meta content="Informace k objednávkovému focení sólo a duo na soutěžích Dance Nation." name="description"/><link href="https://www.sapifoto.cz/dninfo.html" rel="canonical"/><meta content="website" property="og:type"/><meta content="Focení Dance Nation | ŠAPI Foto" property="og:title"/><meta content="Informace k objednávkovému focení sólo a duo na soutěžích Dance Nation." property="og:description"/><meta content="https://www.sapifoto.cz/dninfo.html" property="og:url"/><meta content="https://www.sapifoto.cz/img/dninfo-hero.webp" property="og:image"/><meta content="summary_large_image" name="twitter:card"/><meta content="Focení Dance Nation | ŠAPI Foto" name="twitter:title"/><meta content="Informace k objednávkovému focení sólo a duo na soutěžích Dance Nation." name="twitter:description"/><meta content="https://www.sapifoto.cz/img/dninfo-hero.webp" name="twitter:image"/></head>
 <body>
 <div class="container">
 <!-- LEVÉ MENU -->
@@ -261,9 +364,12 @@
 </ul>
 </nav>
 <main class="content">
-<h1>Focení soutěží Dance Nation</h1>
 <div class="dn-info">
-<section class="hero-box">
+<section class="hero-box" aria-labelledby="dnHeroTitle">
+<img class="hero-image" src="img/dninfo-hero.webp" alt="Ilustrační taneční vystoupení na soutěžním parketu" width="1600" height="901"/>
+<div class="hero-overlay" aria-hidden="true"></div>
+<div class="hero-content">
+<h1 id="dnHeroTitle">Focení soutěží Dance Nation</h1>
 <p class="lead">
             Chcete mít ze soutěže kromě zážitku také pořádnou památku z parketu?
             Nabízím možnost objednat si focení konkrétního <strong>sóla nebo dua</strong>.
@@ -274,6 +380,7 @@
 <a class="secondary" href="https://eu.zonerama.com/dancenation/1512578" rel="noopener noreferrer" target="_blank">
                 Ukázkové fotografie
             </a>
+</div>
 </div>
 </section>
 <section aria-label="Rychlý přehled" class="quick-facts">
@@ -404,6 +511,14 @@
                 Pokud se vám moje práce líbí, <strong>dobrovolný příspěvek samozřejmě potěší</strong>.
             </p>
 </section>
+<section class="info-card full">
+<h2><span class="icon">🔐</span> Přístup k albům Dance Nation</h2>
+<p>
+                Přístup do hlavní složky s alby na <strong>dancenation.zonerama.com</strong> je chráněn heslem.
+                Heslo vám na požádání sdělím. <strong>Heslo prosím nesdílejte mimo členy Dance Nation.</strong>
+            </p>
+</section>
+
 <section class="info-card full">
 <h2><span class="icon">🖨️</span> Chci fotografie také vytisknout</h2>
 <p>
