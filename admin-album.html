@@ -77,9 +77,81 @@
 .admin-links {
     margin-top: 22px;
 }
+
+.admin-order-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    max-width: 520px;
+}
+
+.admin-order-field {
+    flex: 1;
+}
+
+.album-admin-card .admin-order-field label {
+    margin-top: 17px;
+}
+
+.album-admin-card #orderNumber {
+    max-width: 180px;
+}
+
+.album-admin-card #loadBtn {
+    margin-top: 0;
+    white-space: nowrap;
+}
+
+.admin-client-data {
+    display: none;
+    margin-top: 22px;
+    padding: 18px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.admin-client-data.visible {
+    display: block;
+}
+
+.admin-client-data h2 {
+    margin: 0 0 8px;
+    font-size: 19px;
+}
+
+.album-admin-card input[readonly] {
+    background: #f2f2f2;
+    color: #333;
+    cursor: default;
+}
+
+.admin-sent-warning {
+    display: none;
+    margin-top: 14px;
+    padding: 11px 13px;
+    border-radius: 8px;
+    background: #fff8e8;
+    border: 1px solid #d6b66b;
+}
+
+.admin-sent-warning.visible {
+    display: block;
+}
+
 @media (max-width: 600px) {
     .album-admin-card {
         padding: 18px;
+    }
+
+    .admin-order-row {
+        display: block;
+    }
+
+    .album-admin-card #loadBtn {
+        margin-top: 12px;
+        width: 100%;
+        max-width: 180px;
     }
 }
 </style>
@@ -112,36 +184,50 @@
 <div class="album-admin-card">
     <h1>Odeslat hotové fotografie</h1>
     <p>
-        Zadejte údaje zákazníka. Částka je pevně nastavena na
-        <strong>200 Kč</strong>.
+        Zadejte admin heslo a číslo objednávky. Údaje zákazníka se načtou automaticky z objednávkové tabulky. Částka je pevně nastavena na
+        <strong>250 Kč</strong>.
     </p>
 
     <form id="albumMailForm" autocomplete="off">
         <label for="adminPassword">Admin heslo</label>
         <input id="adminPassword" name="password" type="password" required maxlength="100">
 
-        <label for="customerEmail">E-mail zákazníka</label>
-        <input id="customerEmail" name="email" type="email" required maxlength="180"
-               autocomplete="email" placeholder="zakaznik@email.cz">
+        <div class="admin-order-row">
+            <div class="admin-order-field">
+                <label for="orderNumber">Číslo objednávky</label>
+                <input id="orderNumber" name="order_number" type="text" required
+                       inputmode="numeric" pattern="[0-9]{1,10}" maxlength="10"
+                       placeholder="např. 1234">
+            </div>
+            <button id="loadBtn" type="button">Načíst</button>
+        </div>
+        <div class="admin-hint">Číslo objednávky se vyhledává ve sloupci J.</div>
 
-        <label for="albumUrl">Odkaz na album</label>
-        <input id="albumUrl" name="album_url" type="url" required maxlength="500"
-               placeholder="https://...">
-        <div class="admin-hint">Použijte kompletní odkaz začínající https://</div>
+        <div id="clientData" class="admin-client-data" aria-live="polite">
+            <h2>Načtené údaje klienta</h2>
 
-        <label for="variableSymbol">Variabilní symbol</label>
-        <input id="variableSymbol" name="vs" type="text" required
-               inputmode="numeric" pattern="[0-9]{1,10}" maxlength="10"
-               placeholder="např. 1234">
-        <div class="admin-hint">1 až 10 číslic. Stejné číslo bude použito i v předmětu e-mailu.</div>
+            <label for="parentName">Jméno rodiče</label>
+            <input id="parentName" type="text" readonly>
+
+            <label for="customerEmail">E-mail</label>
+            <input id="customerEmail" type="email" readonly>
+
+            <label for="albumUrl">Odkaz na album</label>
+            <input id="albumUrl" type="url" readonly>
+
+            <div id="alreadySentWarning" class="admin-sent-warning">
+                Tato objednávka už má ve sloupci U hodnotu ANO. Dalším odesláním pošlete e-mail znovu.
+            </div>
+        </div>
 
         <div class="admin-summary">
-            <p><strong>Částka:</strong> 200 Kč</p>
+            <p><strong>Částka:</strong> 250 Kč</p>
             <p><strong>Účet:</strong> 332726377/0300</p>
+            <p><strong>Variabilní symbol:</strong> číslo objednávky</p>
             <p><strong>QR platba:</strong> automaticky vložená do e-mailu</p>
         </div>
 
-        <button id="sendBtn" type="submit">Odeslat zákazníkovi</button>
+        <button id="sendBtn" type="submit" disabled>Odeslat zákazníkovi</button>
     </form>
 
     <div id="adminStatus" class="admin-status" role="status" aria-live="polite"></div>
