@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Administrace | ŠAPI Foto</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<style>
+.admin-hub {
+    max-width: 860px;
+}
+
+.admin-hub-intro {
+    margin-bottom: 26px;
+    line-height: 1.6;
+}
+
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.admin-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 210px;
+    box-sizing: border-box;
+    padding: 24px;
+    border: 1px solid #dedede;
+    border-radius: 12px;
+    background: #fff;
+    color: #222;
+    text-decoration: none;
+    box-shadow: 0 5px 18px rgba(0,0,0,.06);
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.admin-card:hover,
+.admin-card:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: 0 9px 24px rgba(0,0,0,.11);
+    border-color: #aaa;
+    outline: none;
+}
+
+.admin-card-icon {
+    font-size: 34px;
+    line-height: 1;
+    margin-bottom: 17px;
+}
+
+.admin-card h2 {
+    margin: 0 0 10px;
+    font-size: 20px;
+}
+
+.admin-card p {
+    margin: 0;
+    line-height: 1.55;
+    font-size: 14px;
+    opacity: .82;
+}
+
+.admin-card-action {
+    margin-top: auto;
+    padding-top: 20px;
+    font-weight: 600;
+}
+
+.admin-note {
+    margin-top: 28px;
+    padding: 15px 17px;
+    background: #f6f6f6;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+@media (max-width: 800px) {
+    .admin-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-card {
+        min-height: 0;
+    }
+}
+
+@media (max-width: 520px) {
+    .admin-card {
+        padding: 20px;
+    }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<aside class="sidebar">
+    <div class="logo">
+        <a href="index.html">
+            <img src="img/logo.webp" alt="ŠAPI Foto">
+        </a>
+    </div>
+
+    <ul>
+        <li><a href="index.html">Úvod</a></li>
+        <li><a href="admin.html">Administrace</a></li>
+    </ul>
+
+    <button class="hamburger"
+            id="hamburger"
+            type="button"
+            aria-controls="mobileMenu"
+            aria-expanded="false"
+            aria-label="Otevřít hlavní menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+</aside>
+
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobilní navigace">
+    <ul>
+        <li><a href="index.html">Úvod</a></li>
+        <li><a href="admin.html">Administrace</a></li>
+    </ul>
+</nav>
+
+<main class="content">
+<div class="admin-hub">
+
+    <h1>Administrace</h1>
+
+    <p class="admin-hub-intro">
+        Rychlý přístup k administračním nástrojům ŠAPI Foto.
+    </p>
+
+    <div class="admin-grid">
+
+        <a class="admin-card" href="admin-foceni.html">
+            <div class="admin-card-icon" aria-hidden="true">📸</div>
+            <h2>Správa focení</h2>
+            <p>
+                Spuštění a zastavení objednávek, nastavení soutěže,
+                termínu a dostupných kategorií.
+            </p>
+            <div class="admin-card-action">Otevřít →</div>
+        </a>
+
+        <a class="admin-card" href="admin-album.html">
+            <div class="admin-card-icon" aria-hidden="true">✉️</div>
+            <h2>Odeslat fotografie</h2>
+            <p>
+                Odeslání odkazu na hotové album zákazníkovi
+                včetně platebních údajů a QR kódu.
+            </p>
+            <div class="admin-card-action">Otevřít →</div>
+        </a>
+
+        <a class="admin-card" href="qrplatba.html">
+            <div class="admin-card-icon" aria-hidden="true">💳</div>
+            <h2>QR platba</h2>
+            <p>
+                Ruční vytvoření QR kódu pro platbu s částkou
+                a variabilním symbolem.
+            </p>
+            <div class="admin-card-action">Otevřít →</div>
+        </a>
+
+    </div>
+
+    <div class="admin-note">
+        Tato stránka není určena pro veřejnou navigaci a má nastavené
+        <strong>noindex / nofollow</strong>. Samotný rozcestník ale není
+        bezpečnostní ochrana – zabezpečení jednotlivých funkcí zajišťují
+        jejich vlastní administrační mechanismy.
+    </div>
+
+</div>
+</main>
+
+</div>
+
+<script defer src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Odeslání alba | ŠAPI Foto</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+.album-admin-wrap {
+    max-width: 680px;
+}
+.album-admin-card {
+    background: #fff;
+    border: 1px solid #dedede;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 5px 18px rgba(0,0,0,.06);
+}
+.album-admin-card h1 {
+    margin-top: 0;
+}
+.album-admin-card label {
+    display: block;
+    font-weight: 600;
+    margin: 17px 0 7px;
+}
+.album-admin-card input {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 520px;
+}
+.album-admin-card #variableSymbol {
+    max-width: 180px;
+}
+.album-admin-card button {
+    margin-top: 22px;
+}
+.admin-hint {
+    font-size: 13px;
+    opacity: .75;
+    margin-top: 5px;
+}
+.admin-summary {
+    margin-top: 22px;
+    padding: 15px;
+    border-radius: 8px;
+    background: #f6f6f6;
+    border: 1px solid #ddd;
+}
+.admin-summary p {
+    margin: 5px 0;
+}
+.admin-status {
+    display: none;
+    margin-top: 18px;
+    padding: 14px;
+    border-radius: 8px;
+}
+.admin-status.success {
+    display: block;
+    background: #eef8ee;
+    border: 1px solid #83b783;
+}
+.admin-status.error {
+    display: block;
+    background: #fff0f0;
+    border: 1px solid #d88;
+}
+.admin-status.info {
+    display: block;
+    background: #f3f6fa;
+    border: 1px solid #aab9ca;
+}
+.admin-links {
+    margin-top: 22px;
+}
+@media (max-width: 600px) {
+    .album-admin-card {
+        padding: 18px;
+    }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<aside class="sidebar">
+    <div class="logo">
+        <a href="index.html"><img src="img/logo.webp" alt="ŠAPI Foto"></a>
+    </div>
+    <ul>
+        <li><a href="index.html">Úvod</a></li>
+        <li><a href="admin-foceni.html">Správa focení</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" type="button"
+            aria-controls="mobileMenu" aria-expanded="false" aria-label="Otevřít hlavní menu">
+        <span></span><span></span><span></span>
+    </button>
+</aside>
+
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobilní navigace">
+    <ul>
+        <li><a href="index.html">Úvod</a></li>
+        <li><a href="admin-foceni.html">Správa focení</a></li>
+    </ul>
+</nav>
+
+<main class="content">
+<div class="album-admin-wrap">
+<div class="album-admin-card">
+    <h1>Odeslat hotové fotografie</h1>
+    <p>
+        Zadejte údaje zákazníka. Částka je pevně nastavena na
+        <strong>200 Kč</strong>.
+    </p>
+
+    <form id="albumMailForm" autocomplete="off">
+        <label for="adminPassword">Admin heslo</label>
+        <input id="adminPassword" name="password" type="password" required maxlength="100">
+
+        <label for="customerEmail">E-mail zákazníka</label>
+        <input id="customerEmail" name="email" type="email" required maxlength="180"
+               autocomplete="email" placeholder="zakaznik@email.cz">
+
+        <label for="albumUrl">Odkaz na album</label>
+        <input id="albumUrl" name="album_url" type="url" required maxlength="500"
+               placeholder="https://...">
+        <div class="admin-hint">Použijte kompletní odkaz začínající https://</div>
+
+        <label for="variableSymbol">Variabilní symbol</label>
+        <input id="variableSymbol" name="vs" type="text" required
+               inputmode="numeric" pattern="[0-9]{1,10}" maxlength="10"
+               placeholder="např. 1234">
+        <div class="admin-hint">1 až 10 číslic. Stejné číslo bude použito i v předmětu e-mailu.</div>
+
+        <div class="admin-summary">
+            <p><strong>Částka:</strong> 200 Kč</p>
+            <p><strong>Účet:</strong> 332726377/0300</p>
+            <p><strong>QR platba:</strong> automaticky vložená do e-mailu</p>
+        </div>
+
+        <button id="sendBtn" type="submit">Odeslat zákazníkovi</button>
+    </form>
+
+    <div id="adminStatus" class="admin-status" role="status" aria-live="polite"></div>
+
+    <div class="admin-links">
+        <a href="admin-foceni.html">← Zpět na správu focení</a>
+    </div>
+</div>
+</div>
+</main>
+</div>
+
+<script defer src="main.js"></script>
+<script defer src="admin-album.js"></script>
+</body>
+</html>
