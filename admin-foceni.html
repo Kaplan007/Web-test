@@ -32,15 +32,46 @@
 }
 .categories {
     display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:8px 18px;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
     margin-top:12px;
+}
+.category-group {
+    min-width:0;
+}
+.category-group-title {
+    margin:0 0 8px;
+    font-size:1rem;
+    font-weight:600;
+}
+.category-grid {
+    display:grid;
+    grid-template-columns:1fr;
+    gap:7px;
 }
 .category-item {
     display:flex;
     align-items:center;
-    gap:8px;
+    gap:9px;
     margin:0;
+    padding:9px 11px;
+    border:1px solid #ddd;
+    border-radius:6px;
+    background:#fff;
+    cursor:pointer;
+    white-space:nowrap;
+    line-height:1.2;
+}
+.category-item input[type="checkbox"] {
+    width:auto;
+    min-width:16px;
+    height:16px;
+    margin:0;
+    flex:0 0 auto;
+}
+.category-item span {
+    display:block;
+    min-width:0;
 }
 .admin-actions {
     display:flex;
@@ -103,6 +134,9 @@
 <p class="small">Objednávky se automaticky ukončí den před uvedeným datem ve 12:00.</p>
 <label class="main-label">Kategorie, pro které přijímám objednávky:</label>
 <div class="categories" id="categories">
+<div class="category-group">
+<h3 class="category-group-title">Sólo</h3>
+<div class="category-grid">
 <label class="category-item"><input type="checkbox" value="Sólo MINI KIDS A"/> <span>Sólo MINI KIDS A</span></label>
 <label class="category-item"><input type="checkbox" value="Sólo CHILDREN C"/> <span>Sólo CHILDREN C</span></label>
 <label class="category-item"><input type="checkbox" value="Sólo CHILDREN B"/> <span>Sólo CHILDREN B</span></label>
@@ -114,6 +148,11 @@
 <label class="category-item"><input type="checkbox" value="Sólo JUNIORS M"/> <span>Sólo JUNIORS M</span></label>
 <label class="category-item"><input type="checkbox" value="Sólo ADULTS A"/> <span>Sólo ADULTS A</span></label>
 <label class="category-item"><input type="checkbox" value="Sólo ADULTS M"/> <span>Sólo ADULTS M</span></label>
+</div>
+</div>
+<div class="category-group">
+<h3 class="category-group-title">Duo</h3>
+<div class="category-grid">
 <label class="category-item"><input type="checkbox" value="Duo MINI KIDS A"/> <span>Duo MINI KIDS A</span></label>
 <label class="category-item"><input type="checkbox" value="Duo CHILDREN A"/> <span>Duo CHILDREN A</span></label>
 <label class="category-item"><input type="checkbox" value="Duo CHILDREN M"/> <span>Duo CHILDREN M</span></label>
@@ -121,6 +160,8 @@
 <label class="category-item"><input type="checkbox" value="Duo JUNIORS M"/> <span>Duo JUNIORS M</span></label>
 <label class="category-item"><input type="checkbox" value="Duo ADULTS A"/> <span>Duo ADULTS A</span></label>
 <label class="category-item"><input type="checkbox" value="Duo ADULTS M"/> <span>Duo ADULTS M</span></label>
+</div>
+</div>
 </div>
 <div class="admin-actions">
 <button id="startBtn" type="button">Spustit objednávky</button>
