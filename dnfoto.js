@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysHFdWmBpfyKeNXBBCsYsWTRVsv5cLXiCeEqnc9lLYfdGYGIH8qwjQmYKbjVYjHL82Vw/exec';
+  const PRICE_PER_ITEM = 250;
+  const MAX_ITEMS = 20;
 
   const form = document.getElementById('orderForm');
   const submitBtn = document.getElementById('submitBtn');
@@ -13,12 +15,11 @@ document.addEventListener('DOMContentLoaded', function () {
   const competitionHidden = document.getElementById('tanecni_soutez');
   const orderDeadlineInfo = document.getElementById('orderDeadlineInfo');
   const orderDeadlineText = document.getElementById('orderDeadlineText');
-  const categorySelect = document.getElementById('kategorie');
-  const soloFields = document.getElementById('soloFields');
-  const duoFields = document.getElementById('duoFields');
-  const soloInput = document.getElementById('tanecnice_solo');
-  const duo1Input = document.getElementById('tanecnice_duo_1');
-  const duo2Input = document.getElementById('tanecnice_duo_2');
+  const itemsContainer = document.getElementById('itemsContainer');
+  const addItemBtn = document.getElementById('addItemBtn');
+  const totalPriceEl = document.getElementById('totalPrice');
+  const itemCountEl = document.getElementById('itemCount');
+  const categoryTemplate = document.getElementById('categoryTemplate');
 
   let latestConfig = null;
   let submitting = false;
@@ -97,8 +98,6 @@ document.addEventListener('DOMContentLoaded', function () {
           lastError = new Error(response.message || 'Server odmítl ověření objednávky.');
         }
       } catch (error) {
-        // Jednotlivý timeout nebo krátký výpadek Apps Scriptu není důvod
-        // ukončit celý proces. Stav zkusíme znovu až do celkového limitu.
         lastError = error;
       }
 
@@ -121,22 +120,141 @@ document.addEventListener('DOMContentLoaded', function () {
     errorMessage.textContent = '';
   }
 
-  function updateDancerFields() {
-    const category = categorySelect.value || '';
-    const isSolo = category.indexOf('Sólo ') === 0;
-    const isDuo = category.indexOf('Duo ') === 0;
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 
-    soloFields.style.display = isSolo ? 'block' : 'none';
-    duoFields.style.display = isDuo ? 'block' : 'none';
-    soloInput.required = isSolo;
-    duo1Input.required = isDuo;
-    duo2Input.required = isDuo;
+  function buildCategoryOptions(select) {
+    select.innerHTML = '<option value="" selected disabled>Vyberte kategorii</option>';
+    (latestConfig && latestConfig.activeCategories || []).forEach(function (category) {
+      const option = document.createElement('option');
+      option.value = category;
+      option.textContent = category;
+      select.appendChild(option);
+    });
+  }
 
-    if (!isSolo) soloInput.value = '';
-    if (!isDuo) {
-      duo1Input.value = '';
-      duo2Input.value = '';
+  function addItem() {
+    if (!latestConfig) return;
+    const currentRows = itemsContainer.querySelectorAll('.order-item');
+    if (currentRows.length >= MAX_ITEMS) {
+      showError('V jedné objednávce lze objednat maximálně ' + MAX_ITEMS + ' položek.', false);
+      return;
     }
+
+    const item = document.createElement('div');
+    item.className = 'order-item';
+    item.innerHTML =
+      '<div class="order-item-head">' +
+        '<strong>Položka <span class="item-number"></span></strong>' +
+        '<button type="button" class="remove-item" aria-label="Odstranit položku">Odstranit</button>' +
+      '</div>' +
+      '<label>Kategorie:</label>' +
+      '<select class="item-category" required></select>' +
+      '<div class="item-solo-fields" style="display:none;">' +
+        '<label>Jméno tanečnice / tanečníka:</label>' +
+        '<input class="item-solo" maxlength="100" type="text">' +
+      '</div>' +
+      '<div class="item-duo-fields" style="display:none;">' +
+        '<label>Jména tanečnic / tanečníků:</label>' +
+        '<input class="item-duo-1" maxlength="100" placeholder="Jméno tanečnice / tanečníka" type="text">' +
+        '<input class="item-duo-2" maxlength="100" placeholder="Jméno tanečnice / tanečníka" style="margin-top:10px;" type="text">' +
+      '</div>' +
+      '<div class="item-price"><span>250 Kč</span></div>';
+
+    const select = item.querySelector('.item-category');
+    const soloFields = item.querySelector('.item-solo-fields');
+    const duoFields = item.querySelector('.item-duo-fields');
+    const soloInput = item.querySelector('.item-solo');
+    const duo1Input = item.querySelector('.item-duo-1');
+    const duo2Input = item.querySelector('.item-duo-2');
+    const removeBtn = item.querySelector('.remove-item');
+
+    buildCategoryOptions(select);
+
+    function updateItemFields() {
+      const category = select.value || '';
+      const isSolo = category.indexOf('Sólo ') === 0;
+      const isDuo = category.indexOf('Duo ') === 0;
+      soloFields.style.display = isSolo ? 'block' : 'none';
+      duoFields.style.display = isDuo ? 'block' : 'none';
+      soloInput.required = isSolo;
+      duo1Input.required = isDuo;
+      duo2Input.required = isDuo;
+
+      if (!isSolo) soloInput.value = '';
+      if (!isDuo) {
+        duo1Input.value = '';
+        duo2Input.value = '';
+      }
+      recalculate();
+    }
+
+    select.addEventListener('change', updateItemFields);
+    [soloInput, duo1Input, duo2Input].forEach(function (input) {
+      input.addEventListener('input', recalculate);
+    });
+    removeBtn.addEventListener('click', function () {
+      item.remove();
+      renumberItems();
+      if (!itemsContainer.querySelector('.order-item')) addItem();
+      recalculate();
+    });
+
+    itemsContainer.appendChild(item);
+    renumberItems();
+    updateItemFields();
+    recalculate();
+    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function renumberItems() {
+    Array.from(itemsContainer.querySelectorAll('.order-item')).forEach(function (item, index) {
+      item.querySelector('.item-number').textContent = String(index + 1);
+      const removeBtn = item.querySelector('.remove-item');
+      removeBtn.disabled = itemsContainer.querySelectorAll('.order-item').length <= 1;
+    });
+  }
+
+  function collectItems() {
+    return Array.from(itemsContainer.querySelectorAll('.order-item')).map(function (item) {
+      const category = item.querySelector('.item-category').value || '';
+      const isSolo = category.indexOf('Sólo ') === 0;
+      return {
+        category: category,
+        type: isSolo ? 'Sólo' : 'Duo',
+        dancers: isSolo
+          ? [item.querySelector('.item-solo').value.trim()]
+          : [
+              item.querySelector('.item-duo-1').value.trim(),
+              item.querySelector('.item-duo-2').value.trim()
+            ]
+      };
+    });
+  }
+
+  function recalculate() {
+    const count = itemsContainer.querySelectorAll('.order-item').length;
+    itemCountEl.textContent = String(count);
+    totalPriceEl.textContent = String(count * PRICE_PER_ITEM);
+    renumberItems();
+  }
+
+  function syncHiddenOrderFields(items, total) {
+    document.getElementById('items_json').value = JSON.stringify(items);
+    document.getElementById('item_count').value = String(items.length);
+    document.getElementById('total_price').value = String(total);
+
+    const first = items[0];
+    document.getElementById('kategorie').value = first.category;
+    document.getElementById('tanecnice_solo').value = first.type === 'Sólo' ? first.dancers[0] : '';
+    document.getElementById('tanecnice_duo_1').value = first.type === 'Duo' ? first.dancers[0] : '';
+    document.getElementById('tanecnice_duo_2').value = first.type === 'Duo' ? first.dancers[1] : '';
   }
 
   function renderConfig(config) {
@@ -165,14 +283,6 @@ document.addEventListener('DOMContentLoaded', function () {
     ordersClosed.style.display = 'none';
     form.style.display = 'block';
 
-    categorySelect.innerHTML = '<option value="" selected disabled>Vyberte kategorii</option>';
-    (config.activeCategories || []).forEach(function (category) {
-      const option = document.createElement('option');
-      option.value = category;
-      option.textContent = category;
-      categorySelect.appendChild(option);
-    });
-
     const inactive = config.inactiveCategories || [];
     if (inactive.length) {
       inactiveCategoriesBox.innerHTML = '<strong>Nepřijímám objednávky pro:</strong>' + inactive.map(function (category) {
@@ -190,11 +300,13 @@ document.addEventListener('DOMContentLoaded', function () {
       orderDeadlineInfo.style.display = 'none';
     }
 
-    updateDancerFields();
+    itemsContainer.innerHTML = '';
+    addItem();
+    recalculate();
   }
 
-  async function loadPublicConfig(silent) {
-    if (!silent) loadingConfig.style.display = 'block';
+  async function loadPublicConfig() {
+    loadingConfig.style.display = 'block';
     try {
       const config = await jsonp('getConfig', {}, 8000);
       if (!config || config.status !== 'OK') throw new Error('Neplatná konfigurace.');
@@ -202,22 +314,11 @@ document.addEventListener('DOMContentLoaded', function () {
       return config;
     } catch (error) {
       console.error(error);
-      if (!silent) {
-        loadingConfig.style.display = 'none';
-        form.style.display = 'none';
-        configError.style.display = 'block';
-      }
+      loadingConfig.style.display = 'none';
+      form.style.display = 'none';
+      configError.style.display = 'block';
       throw error;
     }
-  }
-
-  function escapeHtml(value) {
-    return String(value || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
   }
 
   function netlifyBackupParams(formData) {
@@ -225,15 +326,15 @@ document.addEventListener('DOMContentLoaded', function () {
     formData.forEach(function (value, key) {
       if (typeof value === 'string') params.append(key, value);
     });
-    // Netlify je nezávislá záloha vstupních dat. PENDING nikdy neznamená,
-    // že Apps Script objednávku skutečně přijal.
     params.set('server_order_number', '');
     params.set('server_status', 'PENDING');
     params.set('client_mail_sent', 'NEOVĚŘENO');
     return params;
   }
 
-  categorySelect.addEventListener('change', updateDancerFields);
+  addItemBtn.addEventListener('click', function () {
+    addItem();
+  });
 
   form.addEventListener('submit', function (event) {
     event.preventDefault();
@@ -242,29 +343,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!form.reportValidity()) return;
 
-    // Formulář je veřejně zobrazen pouze při aktivní konfiguraci.
-    // Při odeslání už znovu nečekáme na síťový dotaz – klient dostane
-    // potvrzení okamžitě. Backend si aktuální stav i uzávěrku ověří sám.
     if (latestConfig && !latestConfig.orderingAvailable) {
       renderConfig(latestConfig);
       showError('Objednávání již není dostupné.', false);
       return;
     }
 
+    const items = collectItems();
+    if (!items.length) {
+      showError('Přidejte alespoň jednu položku objednávky.', false);
+      return;
+    }
+
+    const invalid = items.find(function (item) {
+      if (!item.category) return true;
+      if (item.type === 'Sólo') return !item.dancers[0];
+      return !item.dancers[0] || !item.dancers[1];
+    });
+    if (invalid) {
+      showError('Vyplňte kategorii a všechna požadovaná jména u každé položky.', false);
+      return;
+    }
+
+    const total = items.length * PRICE_PER_ITEM;
+    syncHiddenOrderFields(items, total);
+
     submitting = true;
     submitBtn.disabled = true;
 
     const requestId = makeRequestId();
     document.getElementById('request_id').value = requestId;
+    document.getElementById('cena').value = String(total) + ' Kč';
     const formData = new FormData(form);
 
-    const category = formData.get('kategorie') || '';
-    const type = category.indexOf('Sólo ') === 0 ? 'Sólo' : 'Duo';
-    const dancers = type === 'Sólo'
-      ? (formData.get('tanecnice_solo') || '')
-      : (formData.get('tanecnice_duo_1') || '') + ' + ' + (formData.get('tanecnice_duo_2') || '');
-
-    // 1) Apps Script – fire-and-forget. Nečekáme na odpověď.
     fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
@@ -274,7 +385,6 @@ document.addEventListener('DOMContentLoaded', function () {
       console.error('Apps Script POST:', error);
     });
 
-    // 2) Netlify Forms – nezávislá záloha stejných vstupních dat.
     fetch('/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -284,11 +394,11 @@ document.addEventListener('DOMContentLoaded', function () {
       console.error('Netlify backup:', error);
     });
 
-    // 3) Potvrzení uživateli – OKAMŽITĚ, bez čekání na server.
     document.getElementById('confCompetition').textContent = formData.get('tanecni_soutez') || '';
-    document.getElementById('confType').textContent = type;
-    document.getElementById('confDancers').textContent = dancers;
-    document.getElementById('confCategory').textContent = category;
+    document.getElementById('confSummary').textContent = items.map(function (item, index) {
+      return (index + 1) + '. ' + item.category + ' – ' + item.dancers.join(' + ');
+    }).join('\n');
+    document.getElementById('confPrice').textContent = String(total) + ' Kč';
     document.getElementById('confEmailStatus').textContent = 'Potvrzení objednávky obdržíte také e-mailem.';
     document.getElementById('confOrderLine').style.display = 'none';
 
@@ -296,9 +406,6 @@ document.addEventListener('DOMContentLoaded', function () {
     confirmation.style.display = 'block';
     confirmation.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    // 4) Stav ověříme pouze tiše na pozadí. Na nic se nečeká a timeout
-    // se zákazníkovi nezobrazuje. Pokud server odpoví, doplníme číslo
-    // objednávky a skutečný stav e-mailu.
     pollOrderStatus(requestId, 60000).then(function (status) {
       if (!status || !status.accepted) {
         document.getElementById('confEmailStatus').textContent =
@@ -311,15 +418,17 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('confOrderLine').style.display = 'block';
       }
 
+      if (status.total) {
+        document.getElementById('confPrice').textContent = String(status.total) + ' Kč';
+      }
+
       document.getElementById('confEmailStatus').textContent = status.clientMailSent
         ? 'Potvrzení objednávky bylo odesláno na váš e-mail.'
         : 'Objednávka byla přijata. Pokud potvrzovací e-mail nepřijde, není nutné objednávku posílat znovu.';
     }).catch(function (error) {
-      // Síťové ověření je pouze doplňkové. Timeout nesmí kazit UX.
       console.warn('Ověření stavu DN objednávky:', error);
     });
   });
 
-  loadPublicConfig(false).catch(function () {});
-  
+  loadPublicConfig().catch(function () {});
 });

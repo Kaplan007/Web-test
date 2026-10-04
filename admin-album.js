@@ -13,10 +13,12 @@
   const clientData = document.getElementById('clientData');
   const parentName = document.getElementById('parentName');
   const customerEmail = document.getElementById('customerEmail');
-  const albumUrl = document.getElementById('albumUrl');
+  const albumItems = document.getElementById('albumItems');
+  const totalPrice = document.getElementById('totalPrice');
   const alreadySentWarning = document.getElementById('alreadySentWarning');
 
   let loadedOrderNumber = '';
+  let loadedItems = [];
 
   function createRequestId(prefix) {
     if (window.crypto && typeof window.crypto.randomUUID === 'function') {
@@ -37,9 +39,11 @@
 
   function clearLoadedOrder() {
     loadedOrderNumber = '';
+    loadedItems = [];
     parentName.value = '';
     customerEmail.value = '';
-    albumUrl.value = '';
+    albumItems.innerHTML = '';
+    totalPrice.textContent = '—';
     clientData.classList.remove('visible');
     alreadySentWarning.classList.remove('visible');
     sendBtn.disabled = true;
@@ -87,7 +91,6 @@
         cleanup();
         reject(new Error('network'));
       };
-
       script.src = APPS_SCRIPT_URL + '?' + query.toString();
       document.head.appendChild(script);
     });
@@ -95,7 +98,6 @@
 
   async function waitForResult(statusAction, requestId) {
     const deadline = Date.now() + 20000;
-
     while (Date.now() < deadline) {
       try {
         const response = await jsonp(statusAction, requestId, 6000);
@@ -103,12 +105,9 @@
           const state = response.requestStatus;
           if (state.state === 'DONE') return state;
         }
-      } catch (ignore) {
-        // Jednotlivý timeout není důvod ukončit kontrolu.
-      }
+      } catch (ignore) {}
       await new Promise(function (resolve) { window.setTimeout(resolve, 650); });
     }
-
     return null;
   }
 
@@ -120,6 +119,58 @@
       headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
       body: data.toString()
     }).catch(function () {});
+  }
+
+  function renderItems(items) {
+    albumItems.innerHTML = '';
+    loadedItems = items.map(function (item) {
+      return {
+        type: item.type || '',
+        category: item.category || '',
+        dancers: Array.isArray(item.dancers) ? item.dancers.slice() : [],
+        albumUrl: item.albumUrl || ''
+      };
+    });
+
+    loadedItems.forEach(function (item, index) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'album-item';
+
+      const title = document.createElement('div');
+      title.className = 'album-item-title';
+      title.textContent = 'Položka ' + (index + 1) + ': ' + (item.category || item.type || 'Focení');
+      wrapper.appendChild(title);
+
+      const dancers = document.createElement('div');
+      dancers.className = 'album-item-dancers';
+      dancers.textContent = item.dancers.join(' + ');
+      wrapper.appendChild(dancers);
+
+      const label = document.createElement('label');
+      label.textContent = 'Odkaz na album';
+      wrapper.appendChild(label);
+
+      const input = document.createElement('input');
+      input.type = 'url';
+      input.className = 'album-url';
+      input.required = true;
+      input.maxLength = 500;
+      input.placeholder = 'https://...';
+      input.value = item.albumUrl || '';
+      input.dataset.index = String(index);
+      input.addEventListener('input', function () {
+        loadedItems[index].albumUrl = input.value.trim();
+      });
+      wrapper.appendChild(input);
+
+      albumItems.appendChild(wrapper);
+    });
+  }
+
+  function collectAlbumUrls() {
+    return Array.from(albumItems.querySelectorAll('.album-url')).map(function (input) {
+      return { albumUrl: input.value.trim() };
+    });
   }
 
   loadBtn.addEventListener('click', async function () {
@@ -163,7 +214,8 @@
       loadedOrderNumber = String(result.orderNumber || '');
       parentName.value = result.parentName || '';
       customerEmail.value = result.email || '';
-      albumUrl.value = result.albumUrl || '';
+      totalPrice.textContent = String(result.totalPrice || 0) + ' Kč';
+      renderItems(result.items || []);
       clientData.classList.add('visible');
       sendBtn.disabled = false;
 
@@ -194,12 +246,21 @@
       return;
     }
 
+    if (!form.reportValidity()) return;
+
+    const albums = collectAlbumUrls();
+    if (!albums.length || albums.some(function (item) { return !item.albumUrl; })) {
+      showStatus('error', 'Vyplňte odkaz na album u každé položky.');
+      return;
+    }
+
     const requestId = createRequestId('album-send');
     const data = new URLSearchParams();
     data.set('action', 'sendAlbumMail');
     data.set('request_id', requestId);
     data.set('password', passwordInput.value);
     data.set('order_number', orderNumber);
+    data.set('albums_json', JSON.stringify(albums));
 
     loadBtn.disabled = true;
     sendBtn.disabled = true;
@@ -211,20 +272,14 @@
       const result = await waitForResult('getAlbumMailStatus', requestId);
 
       if (!result) {
-        showStatus(
-          'error',
-          'Stav odeslání se nepodařilo ověřit. Neodesílejte zprávu okamžitě znovu – nejprve zkontrolujte e-mail a sloupec U v Google Sheets.'
-        );
+        showStatus('error', 'Stav odeslání se nepodařilo ověřit. Neodesílejte zprávu okamžitě znovu – nejprve zkontrolujte e-mail a sloupec U v Google Sheets.');
         return;
       }
 
       if (result.ok) {
         alreadySentWarning.classList.add('visible');
         sendBtn.textContent = 'Odeslat znovu zákazníkovi';
-        showStatus(
-          'success',
-          'E-mail byl úspěšně odeslán na ' + result.email + '. Ve sloupci U bylo zapsáno ANO.'
-        );
+        showStatus('success', 'E-mail byl úspěšně odeslán na ' + result.email + '. Ve sloupci U bylo zapsáno ANO.');
       } else {
         showStatus('error', result.message || 'E-mail se nepodařilo odeslat.');
       }

@@ -1,322 +1,134 @@
 <!DOCTYPE html>
-
 <html lang="cs">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Objednávka focení Dance Nation | ŠAPI Foto</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet"/>
 <link href="style.css" rel="stylesheet"/>
 <style>
-.form-info {
-    margin-bottom: 25px;
-}
-
-.form-info p {
-    line-height: 1.6;
-}
-
-.cena {
-    font-size: 15px;
-    font-weight: 600;
-    margin: 20px 0;
-}
-
-.form-info > p:first-of-type {
-    font-size: 15px;
-    font-weight: 600;
-}
-
-label {
-    display: block;
-    margin-top: 15px;
-    margin-bottom: 5px;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="tel"],
-select,
-textarea {
-    width: 100%;
-    box-sizing: border-box;
-}
-
-
-
-
-
-.gdpr {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    margin-top: 25px;
-}
-
-.gdpr input {
-    margin-top: 4px;
-}
-
-#soloFields,
-#duoFields {
-    margin-top: 10px;
-}
-
-#confirmation {
-    display: none;
-    margin-top: 20px;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background: #f9f9f9;
-}
-
-#confirmation h2 {
-    margin-top: 0;
-}
-
-.error-message {
-    display: none;
-    margin-top: 20px;
-    padding: 15px;
-    background: #fff0f0;
-    border: 1px solid #d88;
-    border-radius: 6px;
-}
-
-.confirmation-buttons {
-    display: flex;
-    gap: 12px;
-    margin-top: 25px;
-    flex-wrap: wrap;
-}
-
-.confirmation-buttons a {
-    display: inline-block;
-    padding: 11px 18px;
-    text-decoration: none;
-    border-radius: 4px;
-}
-
-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-#loadingConfig,
-#ordersClosed,
-#configError {
-    margin-top: 20px;
-    padding: 16px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background: #f9f9f9;
-}
-
-#ordersClosed,
-#configError {
-    display: none;
-}
-
-#inactiveCategories {
-    margin: 10px 0 22px;
-    line-height: 1.6;
-}
-
-#inactiveCategories strong {
-    display: block;
-    margin-bottom: 8px;
-}
-
-#inactiveCategories .inactive-category {
-    display: block;
-    margin: 3px 0;
-}
-
-#orderDeadlineInfo {
-    display: none;
-    margin: 0 0 22px;
-    padding: 14px 16px;
-    border: 1px solid #d9d9d9;
-    border-radius: 7px;
-    background: #f7f7f7;
-    line-height: 1.55;
-}
-
-#orderDeadlineInfo strong {
-    font-weight: 600;
-}
-
+.form-info { margin-bottom: 25px; }
+.form-info p { line-height: 1.6; }
+.cena { font-size: 15px; font-weight: 600; margin: 20px 0; }
+.form-info > p:first-of-type { font-size: 15px; font-weight: 600; }
+label { display: block; margin-top: 15px; margin-bottom: 5px; }
+input[type="text"], input[type="email"], input[type="tel"], select, textarea { width: 100%; box-sizing: border-box; }
+.gdpr { display:flex; align-items:flex-start; gap:8px; margin-top:25px; }
+.gdpr input { margin-top:4px; }
+#confirmation { display:none; margin-top:20px; padding:20px; border:1px solid #ccc; border-radius:6px; background:#f9f9f9; }
+#confirmation h2 { margin-top:0; }
+.error-message { display:none; margin-top:20px; padding:15px; background:#fff0f0; border:1px solid #d88; border-radius:6px; }
+.confirmation-buttons { display:flex; gap:12px; margin-top:25px; flex-wrap:wrap; }
+.confirmation-buttons a { display:inline-block; padding:11px 18px; text-decoration:none; border-radius:4px; }
+button:disabled { opacity:.6; cursor:not-allowed; }
+#loadingConfig, #ordersClosed, #configError { margin-top:20px; padding:16px; border:1px solid #ccc; border-radius:6px; background:#f9f9f9; }
+#ordersClosed, #configError { display:none; }
+#inactiveCategories { margin:10px 0 22px; line-height:1.6; }
+#inactiveCategories strong { display:block; margin-bottom:8px; }
+#inactiveCategories .inactive-category { display:block; margin:3px 0; }
+#orderDeadlineInfo { display:none; margin:0 0 22px; padding:14px 16px; border:1px solid #d9d9d9; border-radius:7px; background:#f7f7f7; line-height:1.55; }
+#orderDeadlineInfo strong { font-weight:600; }
+.order-item { margin-top:22px; padding:18px; border:1px solid #d9d9d9; border-radius:8px; background:#fafafa; }
+.order-item-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:4px; }
+.order-item-head strong { font-size:16px; }
+.remove-item { margin-top:0; }
+.item-price { margin-top:16px; font-weight:600; }
+#addItemBtn { margin-top:16px; }
+.order-total { margin-top:20px; padding:15px 0 2px; border-top:1px solid #ddd; font-weight:600; }
+.order-total-row { display:flex; justify-content:space-between; gap:20px; }
+#confSummary { white-space:pre-line; }
 </style>
-<meta content="Objednávkový formulář focení sólo a duo na soutěžích Dance Nation." name="description"/><link href="https://www.sapifoto.cz/dnfoto.html" rel="canonical"/><meta content="website" property="og:type"/><meta content="Objednávka focení Dance Nation | ŠAPI Foto" property="og:title"/><meta content="Objednávkový formulář focení sólo a duo na soutěžích Dance Nation." property="og:description"/><meta content="https://www.sapifoto.cz/dnfoto.html" property="og:url"/><meta content="https://www.sapifoto.cz/img/2.webp" property="og:image"/><meta content="summary_large_image" name="twitter:card"/><meta content="Objednávka focení Dance Nation | ŠAPI Foto" name="twitter:title"/><meta content="Objednávkový formulář focení sólo a duo na soutěžích Dance Nation." name="twitter:description"/></head>
+<meta content="Objednávkový formulář focení sólo a duo na soutěžích Dance Nation." name="description"/>
+<link href="https://www.sapifoto.cz/dnfoto.html" rel="canonical"/>
+<meta content="website" property="og:type"/>
+<meta content="Objednávka focení Dance Nation | ŠAPI Foto" property="og:title"/>
+<meta content="Objednávkový formulář focení sólo a duo na soutěžích Dance Nation." property="og:description"/>
+<meta content="https://www.sapifoto.cz/dnfoto.html" property="og:url"/>
+<meta content="https://www.sapifoto.cz/img/2.webp" property="og:image"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="Objednávka focení Dance Nation | ŠAPI Foto" name="twitter:title"/>
+<meta content="Objednávkový formulář focení sólo a duo na soutěžích Dance Nation." name="twitter:description"/>
+</head>
 <body>
 <div class="container">
 <aside class="sidebar">
-<div class="logo">
-<a href="index.html">
-<img alt="ŠAPI Foto" height="399" src="img/logo.webp" width="450"/>
-</a>
-</div>
+<div class="logo"><a href="index.html"><img alt="ŠAPI Foto" height="399" src="img/logo.webp" width="450"/></a></div>
 <ul>
-<li class="home">
-<a aria-label="Úvodní stránka" href="index.html">
-<svg aria-hidden="true" focusable="false" viewbox="0 0 24 24">
-<path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"></path>
-</svg>
-</a>
-</li>
-<li><a href="omne.html">O mně</a></li>
-<li><a href="fotogalerie.html">Fotogalerie</a></li>
-<li><a href="sluzby.html">Služby</a></li>
-<li><a href="dnfoto.html">DN foto</a></li>
-<li><a href="tisk.html">Tisk</a></li>
-<li><a href="kontakt.html">Kontakt</a></li>
+<li class="home"><a aria-label="Úvodní stránka" href="index.html"><svg aria-hidden="true" focusable="false" viewbox="0 0 24 24"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"></path></svg></a></li>
+<li><a href="omne.html">O mně</a></li><li><a href="fotogalerie.html">Fotogalerie</a></li><li><a href="sluzby.html">Služby</a></li><li><a href="dnfoto.html">DN foto</a></li><li><a href="tisk.html">Tisk</a></li><li><a href="kontakt.html">Kontakt</a></li>
 </ul>
-<button aria-controls="mobileMenu" aria-expanded="false" aria-label="Otevřít hlavní menu" class="hamburger" id="hamburger" type="button">
-<span></span>
-<span></span>
-<span></span>
-</button>
+<button aria-controls="mobileMenu" aria-expanded="false" aria-label="Otevřít hlavní menu" class="hamburger" id="hamburger" type="button"><span></span><span></span><span></span></button>
 </aside>
-<nav aria-label="Mobilní navigace" class="mobile-menu" id="mobileMenu">
-<ul>
-<li><a href="index.html">Úvod</a></li>
-<li><a href="omne.html">O mně</a></li>
-<li><a href="fotogalerie.html">Fotogalerie</a></li>
-<li><a href="sluzby.html">Služby</a></li>
-<li><a href="dnfoto.html">DN foto</a></li>
-<li><a href="tisk.html">Tisk</a></li>
-<li><a href="kontakt.html">Kontakt</a></li>
-</ul>
-</nav>
+<nav aria-label="Mobilní navigace" class="mobile-menu" id="mobileMenu"><ul>
+<li><a href="index.html">Úvod</a></li><li><a href="omne.html">O mně</a></li><li><a href="fotogalerie.html">Fotogalerie</a></li><li><a href="sluzby.html">Služby</a></li><li><a href="dnfoto.html">DN foto</a></li><li><a href="tisk.html">Tisk</a></li><li><a href="kontakt.html">Kontakt</a></li>
+</ul></nav>
 <main class="content">
 <h1>Objednávka focení sólo / duo</h1>
 <div class="form-info">
-<p>
-<strong>Taneční soutěž:</strong><br/>
-<span id="competitionDisplay">Načítám...</span>
-</p>
-<div class="cena">
-        Cena: 250 Kč za sólo nebo duo
-    </div>
-<p>
-<strong><a href="dninfo.html">
-            Přehledné informace o službě
-        </a>
-</strong><br/>
-</p>
-<p>
-<strong><a href="podminkydnfoto.html">
-            Kompletní podmínky služby
-        </a>
-</strong><br/>
-</p>
+<p><strong>Taneční soutěž:</strong><br/><span id="competitionDisplay">Načítám...</span></p>
+<div class="cena">Cena: 250 Kč za sólo nebo duo</div>
+<p><strong><a href="dninfo.html">Přehledné informace o službě</a></strong><br/></p>
+<p><strong><a href="podminkydnfoto.html">Kompletní podmínky služby</a></strong><br/></p>
 </div>
 <div id="loadingConfig">Načítám aktuální nastavení objednávek...</div>
-<div id="ordersClosed">
-<strong>Možnost objednání bude spuštěna po zveřejnění harmonogramu následující soutěže.</strong>
-</div>
-<div id="configError">
-    Nastavení objednávek se nepodařilo načíst. Zkuste prosím stránku obnovit.
-</div>
+<div id="ordersClosed"><strong>Možnost objednání bude spuštěna po zveřejnění harmonogramu následující soutěže.</strong></div>
+<div id="configError">Nastavení objednávek se nepodařilo načíst. Zkuste prosím stránku obnovit.</div>
 <div id="inactiveCategories" style="display:none;"></div>
-<div id="orderDeadlineInfo">
-    Objednání je možné do <strong id="orderDeadlineText"></strong>.
-</div>
-<form data-netlify="true" data-netlify-honeypot="website" id="orderForm" method="POST" name="foceni-form" style="display:none;"><div aria-hidden="true" class="honeypot-field"><label for="website">Nevyplňujte toto pole</label><input autocomplete="off" id="website" name="website" tabindex="-1" type="text"/></div><input id="client_mail_sent" name="client_mail_sent" type="hidden" value=""/><input id="server_status" name="server_status" type="hidden" value=""/><input id="server_order_number" name="server_order_number" type="hidden" value=""/><input id="terms_version" name="terms_version" type="hidden" value="WEB-2026-08-31"/><input id="request_id" name="request_id" type="hidden" value=""/>
-<!-- SKRYTÉ ÚDAJE -->
+<div id="orderDeadlineInfo">Objednání je možné do <strong id="orderDeadlineText"></strong>.</div>
+<form data-netlify="true" data-netlify-honeypot="website" id="orderForm" method="POST" name="foceni-form" style="display:none;">
+<div aria-hidden="true" class="honeypot-field"><label for="website">Nevyplňujte toto pole</label><input autocomplete="off" id="website" name="website" tabindex="-1" type="text"/></div>
+<input id="client_mail_sent" name="client_mail_sent" type="hidden" value=""/>
+<input id="server_status" name="server_status" type="hidden" value=""/>
+<input id="server_order_number" name="server_order_number" type="hidden" value=""/>
+<input id="terms_version" name="terms_version" type="hidden" value="WEB-2026-08-31"/>
+<input id="request_id" name="request_id" type="hidden" value=""/>
 <input name="form-name" type="hidden" value="foceni-form"/>
-<input name="cena" type="hidden" value="250 Kč"/>
+<input id="cena" name="cena" type="hidden" value="250 Kč"/>
 <input id="tanecni_soutez" name="tanecni_soutez" type="hidden" value=""/>
-<label for="jmeno">
-    Jméno rodiče:
-</label>
+<input id="items_json" name="items_json" type="hidden" value=""/>
+<input id="item_count" name="item_count" type="hidden" value="1"/>
+<input id="total_price" name="total_price" type="hidden" value="250"/>
+<input id="kategorie" name="kategorie" type="hidden" value=""/>
+<input id="tanecnice_solo" name="tanecnice_solo" type="hidden" value=""/>
+<input id="tanecnice_duo_1" name="tanecnice_duo_1" type="hidden" value=""/>
+<input id="tanecnice_duo_2" name="tanecnice_duo_2" type="hidden" value=""/>
+
+<label for="jmeno">Jméno rodiče:</label>
 <input autocomplete="name" id="jmeno" maxlength="100" name="jmeno" required="" type="text"/>
-<label for="telefon">
-    Telefon:
-</label>
-<input autocomplete="tel" id="telefon" maxlength="30" name="telefon" pattern="[0-9+() .\/-]{6,30}" required="" type="tel"/>
-<label for="email">
-    E-mail:
-</label>
+<label for="telefon">Telefon:</label>
+<input autocomplete="tel" id="telefon" maxlength="30" name="telefon" pattern="[0-9+() .\/\-]{6,30}" required="" type="tel"/>
+<label for="email">E-mail:</label>
 <input autocomplete="email" id="email" maxlength="254" name="email" required="" type="email"/>
-<!-- KATEGORIE -->
-<label for="kategorie">
-    Kategorie:
-</label>
-<select id="kategorie" name="kategorie" required="">
-<option disabled="" selected="" value="">Vyberte kategorii</option>
-</select>
-<!-- POLE PRO SÓLO -->
-<div id="soloFields" style="display:none;">
-<label for="tanecnice_solo">
-        Jméno tanečnice / tanečníka:
-    </label>
-<input id="tanecnice_solo" maxlength="100" name="tanecnice_solo" type="text"/>
+
+<label>Objednané položky:</label>
+<div id="itemsContainer"></div>
+<button id="addItemBtn" type="button">+ Přidat položku</button>
+<div class="order-total">
+<div class="order-total-row"><span>Počet položek:</span><span id="itemCount">1</span></div>
+<div class="order-total-row"><span>Celkem:</span><span><span id="totalPrice">250</span> Kč</span></div>
 </div>
-<!-- POLE PRO DUO -->
-<div id="duoFields" style="display:none;">
-<label>Jména tanečnic:</label>
-<input id="tanecnice_duo_1" maxlength="100" name="tanecnice_duo_1" placeholder="Jméno tanečnice" aria-label="Jméno tanečnice v duu" type="text"/>
-<input id="tanecnice_duo_2" maxlength="100" name="tanecnice_duo_2" placeholder="Jméno tanečnice" aria-label="Jméno tanečnice v duu" style="margin-top: 10px;" type="text"/>
-</div>
-<label for="poznamka">
-    Poznámka:
-</label>
+
+<label for="poznamka">Poznámka:</label>
 <input id="poznamka" maxlength="500" name="poznamka" placeholder="Nepovinné pole" type="text"/>
-<label class="gdpr">
-<input id="gdprConsent" name="gdpr" required="" type="checkbox" value="ano"/>
-<span>
-        Souhlasím se
-        <a href="gdpr.html" rel="noopener noreferrer" target="_blank">
-            zpracováním osobních údajů
-        </a>
-</span>
-</label>
-<label class="gdpr">
-<input id="termsConsent" name="podminky" required="" type="checkbox" value="ano"/>
-<span>
-        Souhlasím s
-        <a href="podminkydnfoto.html" rel="noopener noreferrer" target="_blank">
-            podmínkami služby
-        </a>
-</span>
-</label>
+<label class="gdpr"><input id="gdprConsent" name="gdpr" required="" type="checkbox" value="ano"/><span>Souhlasím se <a href="gdpr.html" rel="noopener noreferrer" target="_blank">zpracováním osobních údajů</a></span></label>
+<label class="gdpr"><input id="termsConsent" name="podminky" required="" type="checkbox" value="ano"/><span>Souhlasím s <a href="podminkydnfoto.html" rel="noopener noreferrer" target="_blank">podmínkami služby</a></span></label>
 <br/>
-<button id="submitBtn" type="submit">
-    Odeslat objednávku
-</button>
+<button id="submitBtn" type="submit">Odeslat objednávku</button>
 <div aria-live="assertive" class="error-message" id="errorMessage" role="alert"></div>
 </form>
-<!-- POTVRZENÍ OBJEDNÁVKY -->
+
 <div id="confirmation">
 <h2>Objednávka byla odeslána</h2>
-<p>
-        Děkujeme za objednávku focení.
-    </p>
+<p>Děkujeme za objednávku focení.</p>
 <p><span id="confEmailStatus"></span></p>
-<p id="confOrderLine" style="display:none;"><strong>Číslo objednávky: <span id="confOrderNum"></span></strong></p><p>
-<strong>Taneční soutěž:</strong>
-<span id="confCompetition"></span>
-<br/>
-<strong>Typ focení:</strong>
-<span id="confType"></span>
-<br/>
-<strong>Tanečnice:</strong>
-<span id="confDancers"></span>
-<br/>
-<strong>Kategorie:</strong>
-<span id="confCategory"></span>
-<br/>
-<strong>Cena:</strong>
-        250 Kč
-    </p>
-<div class="confirmation-buttons">
-<a class="btn" href="dnfoto.html">Nová objednávka</a>
-<a class="btn" href="index.html">Domů</a>
-</div>
+<p id="confOrderLine" style="display:none;"><strong>Číslo objednávky: <span id="confOrderNum"></span></strong></p>
+<p><strong>Taneční soutěž:</strong><br/><span id="confCompetition"></span></p>
+<p><strong>Objednané položky:</strong><br/><span id="confSummary"></span></p>
+<p><strong>Cena celkem:</strong> <span id="confPrice">250 Kč</span></p>
+<div class="confirmation-buttons"><a class="btn" href="dnfoto.html">Nová objednávka</a><a class="btn" href="index.html">Domů</a></div>
 </div>
 </main>
 </div>
-<script defer="" src="dnfoto.js"></script><script defer="" src="main.js"></script></body>
+<script defer="" src="dnfoto.js"></script><script defer="" src="main.js"></script>
+</body>
 </html>
