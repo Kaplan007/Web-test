@@ -206,12 +206,14 @@ document.addEventListener('DOMContentLoaded', function () {
       recalculate();
     });
 
-    itemsContainer.appendChild(item);
-    renumberItems();
-    updateItemFields();
-    recalculate();
-    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
+   itemsContainer.appendChild(item);
+renumberItems();
+updateItemFields();
+recalculate();
+
+if (itemsContainer.querySelectorAll('.order-item').length > 1) {
+  item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 
   function renumberItems() {
     Array.from(itemsContainer.querySelectorAll('.order-item')).forEach(function (item, index) {
