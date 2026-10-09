@@ -39,6 +39,8 @@
   function setBusy(value, label) {
     busy = value;
     loadCompetitionsBtn.disabled = value;
+    passwordInput.disabled = value;
+    competitionSelect.disabled = value || !competitionSelect.value;
     loadDebtsBtn.disabled = value || !competitionSelect.value;
     sendBtn.disabled = value || !getSelectedOrders().length;
     loadCompetitionsBtn.textContent = value && label === 'competitions' ? 'Načítám…' : 'Načíst soutěže';
@@ -311,9 +313,13 @@
     try {
       const result = await runServerAction('remindersLoad', { competition: competition }, 90000);
       if (!result.ok) throw new Error(result.message || 'Pohledávky se nepodařilo načíst.');
-      renderDebts(result.orders || []);
-      const eligible = (result.orders || []).filter(function (order) { return order.canSend; }).length;
-      showStatus('success', 'Soutěž: ' + competition + '\nPohledávek: ' + (result.orders || []).length + '\nPřipraveno k odeslání: ' + eligible + '.');
+      const loadedOrders = result.orders || [];
+      renderDebts(loadedOrders);
+      const eligible = loadedOrders.filter(function (order) { return order.canSend; }).length;
+      if (!loadedOrders.length) {
+        showStatus('success', 'Pro vybranou soutěž nebyly nalezeny žádné neuhrazené objednávky.');
+      } else {
+        showStatus('success', 'Soutěž: ' + competition + '\nPohledávek: ' + (result.orders || []).length + '\nPřipraveno k odeslání: ' + eligible + '.');
     } catch (error) {
       showStatus('error', error.message || 'Pohledávky se nepodařilo načíst.');
     } finally {
