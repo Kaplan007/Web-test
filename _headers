@@ -8,3 +8,7 @@
 /admin-foceni.html
   X-Robots-Tag: noindex, nofollow, noarchive
   Cache-Control: no-store
+
+/admin-upominky.html
+  X-Robots-Tag: noindex, nofollow, noarchive
+  Cache-Control: no-store
