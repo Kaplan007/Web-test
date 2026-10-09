@@ -291,7 +291,7 @@
       showStatus('error', error.message || 'Soutěže se nepodařilo načíst.');
     } finally {
       setBusy(false);
-      competitionSelect.disabled = competitionSelect.options.length === 0;
+      competitionSelect.disabled = !competitionSelect.value;
       loadDebtsBtn.disabled = !competitionSelect.value;
     }
   });
