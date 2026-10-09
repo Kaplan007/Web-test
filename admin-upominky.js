@@ -319,7 +319,8 @@
       if (!loadedOrders.length) {
         showStatus('success', 'Pro vybranou soutěž nebyly nalezeny žádné neuhrazené objednávky.');
       } else {
-        showStatus('success', 'Soutěž: ' + competition + '\nPohledávek: ' + (result.orders || []).length + '\nPřipraveno k odeslání: ' + eligible + '.');
+        showStatus('success', 'Soutěž: ' + competition + '\nPohledávek: ' + loadedOrders.length + '\nPřipraveno k odeslání: ' + eligible + '.');
+      }
     } catch (error) {
       showStatus('error', error.message || 'Pohledávky se nepodařilo načíst.');
     } finally {
