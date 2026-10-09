@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Upomínky | ŠAPI Foto</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+.reminders-wrap { max-width: 1050px; }
+.reminders-card { margin:20px 0; padding:22px; border:1px solid #dedede; border-radius:12px; background:#fff; box-shadow:0 5px 18px rgba(0,0,0,.05); }
+.reminders-card h2 { margin:0 0 14px; font-size:20px; }
+.reminders-fields { display:grid; grid-template-columns:minmax(220px,1fr) minmax(240px,1.4fr); gap:16px; align-items:end; }
+.reminders-field label { display:block; font-weight:600; margin:0 0 7px; }
+.reminders-field input, .reminders-field select { width:100%; max-width:none; box-sizing:border-box; }
+.reminders-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+.reminders-actions button { margin-top:0; }
+.reminders-help { color:#666; font-size:13px; line-height:1.55; margin:12px 0 0; }
+.reminders-status { display:none; margin:18px 0; padding:14px 16px; border-radius:8px; line-height:1.55; white-space:pre-line; overflow-wrap:anywhere; }
+.reminders-status.info { display:block; background:#f3f6fa; border:1px solid #aab9ca; }
+.reminders-status.success { display:block; background:#eef8ee; border:1px solid #83b783; }
+.reminders-status.error { display:block; background:#fff0f0; border:1px solid #d88; }
+.reminders-table-wrap { overflow-x:auto; }
+#debtsTable { width:100%; border-collapse:collapse; margin-top:12px; font-size:14px; }
+#debtsTable th, #debtsTable td { padding:11px 10px; text-align:left; vertical-align:top; border-bottom:1px solid #e5e5e5; }
+#debtsTable th { background:#f7f7f7; font-weight:600; white-space:nowrap; }
+#debtsTable td.amount { white-space:nowrap; font-weight:600; }
+#debtsTable td.email { overflow-wrap:anywhere; }
+#debtsTable .order-detail { display:block; margin-top:5px; color:#666; font-size:12px; white-space:pre-line; line-height:1.45; }
+#debtsTable input[type="checkbox"], #selectAll { width:18px; height:18px; margin:2px 0 0; }
+#debtsTable tr.not-sendable { background:#fafafa; color:#777; }
+#debtsTable tr.not-sendable .amount { color:#777; }
+.reminders-summary { display:flex; flex-wrap:wrap; gap:12px 25px; padding:14px 0 2px; }
+.reminders-summary strong { font-size:17px; }
+.reminders-final-actions { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:18px; }
+#sendRemindersBtn { background:#2e6b45; }
+#sendRemindersBtn:disabled { opacity:.45; cursor:not-allowed; }
+#resultsList { margin:10px 0 0; padding-left:22px; }
+.reminders-back { margin-top:22px; }
+@media (max-width:740px) {
+  .reminders-fields { grid-template-columns:1fr; }
+  .reminders-card { padding:17px; }
+  #debtsTable { min-width:720px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<aside class="sidebar">
+  <div class="logo"><a href="index.html"><img src="img/logo.webp" alt="ŠAPI Foto"></a></div>
+  <ul>
+    <li><a href="index.html">Úvod</a></li>
+    <li><a href="admin.html">Administrace</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" type="button" aria-controls="mobileMenu" aria-expanded="false" aria-label="Otevřít hlavní menu">
+    <span></span><span></span><span></span>
+  </button>
+</aside>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobilní navigace">
+  <ul><li><a href="index.html">Úvod</a></li><li><a href="admin.html">Administrace</a></li></ul>
+</nav>
+<main class="content">
+<div class="reminders-wrap">
+  <h1>Upomínky</h1>
+  <p>Přehled neuhrazených objednávek focení a ruční výběr příjemců připomenutí platby.</p>
+
+  <section class="reminders-card" aria-labelledby="settingsHeading">
+    <h2 id="settingsHeading">Výběr soutěže</h2>
+    <div class="reminders-fields">
+      <div class="reminders-field">
+        <label for="adminPassword">Administrační heslo</label>
+        <input id="adminPassword" type="password" autocomplete="current-password" maxlength="100" required>
+      </div>
+      <div class="reminders-field">
+        <label for="competitionSelect">Soutěž</label>
+        <select id="competitionSelect" disabled>
+          <option value="">Nejprve načtěte seznam soutěží</option>
+        </select>
+      </div>
+    </div>
+    <div class="reminders-actions">
+      <button id="loadCompetitionsBtn" type="button">Načíst soutěže</button>
+      <button id="loadDebtsBtn" type="button" disabled>Výpis pohledávek</button>
+    </div>
+    <p class="reminders-help">Seznam soutěží se načítá ze sloupce A v Google Sheets. Výše nedoplatku se počítá jako celková cena minus již zaplacená částka.</p>
+  </section>
+
+  <div id="remindersStatus" class="reminders-status" role="status" aria-live="polite"></div>
+
+  <section class="reminders-card" id="debtsSection" style="display:none" aria-labelledby="debtsHeading">
+    <h2 id="debtsHeading">Neuhrazené objednávky</h2>
+    <div class="reminders-summary">
+      <div>Počet pohledávek: <strong id="debtCount">0</strong></div>
+      <div>Celkový nedoplatek: <strong id="debtTotal">0 Kč</strong></div>
+      <div>Vybraní příjemci: <strong id="selectedCount">0</strong></div>
+      <div>Vybraná částka: <strong id="selectedTotal">0 Kč</strong></div>
+    </div>
+    <div class="reminders-table-wrap">
+      <table id="debtsTable">
+        <thead>
+          <tr>
+            <th><input id="selectAll" type="checkbox" aria-label="Vybrat všechny způsobilé objednávky"></th>
+            <th>Číslo</th>
+            <th>Jméno</th>
+            <th>Nedoplatek</th>
+            <th>E-mail</th>
+            <th>Stav</th>
+          </tr>
+        </thead>
+        <tbody id="debtsBody"></tbody>
+      </table>
+    </div>
+    <p class="reminders-help">Způsobilé objednávky jsou předvybrané. Checkboxem můžeš jednotlivé klienty vynechat. Upomínku lze poslat pouze u objednávky, u které už byly odeslány fotografie a je uveden platný e-mail. Stav úhrady se před odesláním znovu ověří.</p>
+    <div class="reminders-final-actions">
+      <button id="sendRemindersBtn" type="button" disabled>Poslat upomínku vybraným</button>
+      <span class="reminders-help" id="sendHelp">Nejprve načtěte pohledávky.</span>
+    </div>
+  </section>
+
+  <div class="reminders-back"><a href="admin.html">← Zpět na administraci</a></div>
+</div>
+</main>
+</div>
+<script defer src="main.js"></script>
+<script defer src="admin-upominky.js"></script>
+</body>
+</html>
