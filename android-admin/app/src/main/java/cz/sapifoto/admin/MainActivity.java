@@ -11,6 +11,8 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Build;
+import android.view.WindowInsets;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,6 +62,23 @@ public class MainActivity extends Activity {
     private void buildLayout() {
         root = new FrameLayout(this);
         root.setBackgroundColor(BG);
+
+        // Android 15 / targetSdk 35 lays apps out edge-to-edge by default.
+        // Apply system-bar insets to the root so the toolbar and WebView stay
+        // between the status bar and gesture/navigation bar on all supported APIs.
+        root.setOnApplyWindowInsetsListener((view, insets) -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
+                view.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+            } else {
+                view.setPadding(
+                        insets.getSystemWindowInsetLeft(),
+                        insets.getSystemWindowInsetTop(),
+                        insets.getSystemWindowInsetRight(),
+                        insets.getSystemWindowInsetBottom());
+            }
+            return insets;
+        });
 
         LinearLayout page = new LinearLayout(this);
         page.setOrientation(LinearLayout.VERTICAL);
