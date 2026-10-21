@@ -313,6 +313,14 @@ public class MainActivity extends Activity {
     }
 
     private void openSection(String section) {
+        if ("Objednávky".equals(section)) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Objednávky")
+                    .setMessage("Návrh obrazovky je připraven. Pro bezpečné načtení všech objednávek je potřeba doplnit samostatnou čtecí akci do Google Apps Scriptu. Stávající akce pro upomínky vrací pouze neuhrazené objednávky, takže je nelze použít jako úplný přehled. Web ani stávající funkce nebudou měněny.")
+                    .setPositiveButton("Rozumím", (dialog, which) -> {})
+                    .show();
+            return;
+        }
         currentSection = section;
         webSectionTitle.setText(section);
         homePanel.setVisibility(View.GONE);
