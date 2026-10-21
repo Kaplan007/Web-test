@@ -20,6 +20,15 @@
   let loadedOrderNumber = '';
   let loadedItems = [];
 
+  // Additive hand-off from the Orders overview; manual entry remains unchanged.
+  try {
+    const requestedOrder = sessionStorage.getItem('sapiAdminOrderNumber');
+    if (requestedOrder && /^\\d{1,10}$/.test(requestedOrder)) {
+      orderInput.value = requestedOrder;
+      sessionStorage.removeItem('sapiAdminOrderNumber');
+    }
+  } catch (ignore) {}
+
   function createRequestId(prefix) {
     if (window.crypto && typeof window.crypto.randomUUID === 'function') {
       return prefix + '-' + window.crypto.randomUUID();
