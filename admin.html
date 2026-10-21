@@ -5,201 +5,136 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow,noarchive">
 <meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#a45f20">
 <title>Administrace | ŠAPI Foto</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-
 <style>
-.admin-hub {
-    max-width: 860px;
+:root {
+  --admin-accent: #a45f20;
+  --admin-accent-dark: #754216;
+  --admin-ink: #29231f;
+  --admin-muted: #756a62;
+  --admin-line: #e8e0d9;
+  --admin-surface: #fff;
+  --admin-warm: #faf7f3;
 }
-
-.admin-hub-intro {
-    margin-bottom: 26px;
-    line-height: 1.6;
+body { background: var(--admin-warm); color: var(--admin-ink); }
+.content { padding: clamp(20px, 4vw, 48px); }
+.admin-hub { width: 100%; max-width: 1180px; margin: 0 auto; }
+.admin-topline { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:28px; }
+.admin-brand { display:flex; align-items:center; gap:13px; min-width:0; }
+.admin-brand-mark { display:grid; place-items:center; width:50px; height:50px; flex:0 0 50px; border-radius:14px; background:var(--admin-accent); color:#fff; font-size:25px; box-shadow:0 7px 18px rgba(164,95,32,.2); }
+.admin-brand h1 { margin:0; color:var(--admin-ink); font-size:clamp(24px, 3vw, 32px); letter-spacing:-.7px; line-height:1.2; }
+.admin-eyebrow { margin:4px 0 0; color:var(--admin-muted); font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; }
+.admin-intro { margin:0 0 28px; max-width:740px; color:var(--admin-muted); line-height:1.65; }
+.admin-section-heading { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:0 0 14px; }
+.admin-section-heading h2 { margin:0; font-size:18px; color:var(--admin-ink); }
+.admin-section-heading p { margin:0; color:var(--admin-muted); font-size:12px; }
+.admin-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.admin-card { display:flex; align-items:flex-start; gap:16px; min-width:0; padding:22px; border:1px solid var(--admin-line); border-radius:15px; background:var(--admin-surface); color:inherit; text-decoration:none; box-shadow:0 3px 12px rgba(48,34,22,.035); transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease; }
+.admin-card:hover, .admin-card:focus-visible { transform:translateY(-2px); border-color:#cba783; box-shadow:0 10px 25px rgba(48,34,22,.09); outline:none; }
+.admin-card:focus-visible { outline:3px solid #b57a43; outline-offset:3px; }
+.admin-card-icon { display:grid; place-items:center; width:48px; height:48px; flex:0 0 48px; border-radius:13px; background:#f5e9dc; font-size:25px; }
+.admin-card-body { flex:1; min-width:0; }
+.admin-card h3 { margin:1px 0 7px; font-size:17px; line-height:1.35; color:var(--admin-ink); }
+.admin-card p { margin:0; color:var(--admin-muted); font-size:13px; line-height:1.6; }
+.admin-card-action { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:14px; color:var(--admin-accent-dark); font-size:13px; font-weight:700; }
+.admin-card-action span:last-child { font-size:20px; transition:transform .16s ease; }
+.admin-card:hover .admin-card-action span:last-child { transform:translateX(3px); }
+.admin-safety { display:flex; align-items:flex-start; gap:12px; margin-top:24px; padding:16px 18px; border:1px solid #e7d7c5; border-radius:12px; background:#f6eee5; color:#5e4a39; font-size:12px; line-height:1.65; }
+.admin-safety-icon { flex:0 0 auto; font-size:19px; }
+.admin-safety strong { color:#3c3026; }
+.admin-footer { margin-top:24px; color:#8b8077; font-size:11px; }
+@media (max-width:800px) {
+  .content { padding:82px 18px 28px; }
+  .admin-grid { grid-template-columns:1fr; gap:12px; }
+  .admin-card { padding:18px; }
+  .admin-topline { align-items:flex-start; }
 }
-
-.admin-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
-}
-
-.admin-card {
-    display: flex;
-    flex-direction: column;
-    min-height: 210px;
-    box-sizing: border-box;
-    padding: 24px;
-    border: 1px solid #dedede;
-    border-radius: 12px;
-    background: #fff;
-    color: #222;
-    text-decoration: none;
-    box-shadow: 0 5px 18px rgba(0,0,0,.06);
-    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
-}
-
-.admin-card:hover,
-.admin-card:focus-visible {
-    transform: translateY(-3px);
-    box-shadow: 0 9px 24px rgba(0,0,0,.11);
-    border-color: #aaa;
-    outline: none;
-}
-
-.admin-card-icon {
-    font-size: 34px;
-    line-height: 1;
-    margin-bottom: 17px;
-}
-
-.admin-card h2 {
-    margin: 0 0 10px;
-    font-size: 20px;
-}
-
-.admin-card p {
-    margin: 0;
-    line-height: 1.55;
-    font-size: 14px;
-    opacity: .82;
-}
-
-.admin-card-action {
-    margin-top: auto;
-    padding-top: 20px;
-    font-weight: 600;
-}
-
-.admin-note {
-    margin-top: 28px;
-    padding: 15px 17px;
-    background: #f6f6f6;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 13px;
-    line-height: 1.55;
-}
-
-@media (max-width: 800px) {
-    .admin-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .admin-card {
-        min-height: 0;
-    }
-}
-
-@media (max-width: 520px) {
-    .admin-card {
-        padding: 20px;
-    }
+@media (prefers-reduced-motion: reduce) {
+  .admin-card, .admin-card-action span:last-child { transition:none; }
+  .admin-card:hover { transform:none; }
 }
 </style>
 </head>
-
 <body>
 <div class="container">
-
 <aside class="sidebar">
-    <div class="logo">
-        <a href="index.html">
-            <img src="img/logo.webp" alt="ŠAPI Foto">
-        </a>
-    </div>
-
-    <ul>
-        <li><a href="index.html">Úvod</a></li>
-        <li><a href="admin.html">Administrace</a></li>
-    </ul>
-
-    <button class="hamburger"
-            id="hamburger"
-            type="button"
-            aria-controls="mobileMenu"
-            aria-expanded="false"
-            aria-label="Otevřít hlavní menu">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
+  <div class="logo"><a href="index.html"><img src="img/logo.webp" alt="ŠAPI Foto"></a></div>
+  <ul>
+    <li><a href="index.html">Úvod</a></li>
+    <li><a href="admin.html" aria-current="page">Administrace</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" type="button" aria-controls="mobileMenu" aria-expanded="false" aria-label="Otevřít hlavní menu">
+    <span></span><span></span><span></span>
+  </button>
 </aside>
-
 <nav class="mobile-menu" id="mobileMenu" aria-label="Mobilní navigace">
-    <ul>
-        <li><a href="index.html">Úvod</a></li>
-        <li><a href="admin.html">Administrace</a></li>
-    </ul>
+  <ul><li><a href="index.html">Úvod</a></li><li><a href="admin.html" aria-current="page">Administrace</a></li></ul>
 </nav>
-
 <main class="content">
 <div class="admin-hub">
-
-    <h1>Administrace</h1>
-
-    <p class="admin-hub-intro">
-        Rychlý přístup k administračním nástrojům ŠAPI Foto.
-    </p>
-
-    <div class="admin-grid">
-
-        <a class="admin-card" href="admin-foceni.html">
-            <div class="admin-card-icon" aria-hidden="true">📸</div>
-            <h2>Správa focení</h2>
-            <p>
-                Spuštění a zastavení objednávek, nastavení soutěže,
-                termínu a dostupných kategorií.
-            </p>
-            <div class="admin-card-action">Otevřít →</div>
-        </a>
-
-        <a class="admin-card" href="admin-album.html">
-            <div class="admin-card-icon" aria-hidden="true">✉️</div>
-            <h2>Odeslat fotografie</h2>
-            <p>
-                Odeslání odkazu na hotové album zákazníkovi
-                včetně platebních údajů a QR kódu.
-            </p>
-            <div class="admin-card-action">Otevřít →</div>
-        </a>
-
-        <a class="admin-card" href="admin-upominky.html">
-            <div class="admin-card-icon" aria-hidden="true">✉️</div>
-            <h2>Upomínky</h2>
-            <p>
-                Přehled neuhrazených objednávek a individuální odeslání
-                přátelských připomenutí platby s QR kódem.
-            </p>
-            <div class="admin-card-action">Otevřít →</div>
-        </a>
-
-        <a class="admin-card" href="qrplatba.html">
-            <div class="admin-card-icon" aria-hidden="true">💳</div>
-            <h2>QR platba</h2>
-            <p>
-                Ruční vytvoření QR kódu pro platbu s částkou
-                a variabilním symbolem.
-            </p>
-            <div class="admin-card-action">Otevřít →</div>
-        </a>
-
+  <header class="admin-topline">
+    <div class="admin-brand">
+      <div class="admin-brand-mark" aria-hidden="true">📸</div>
+      <div>
+        <h1>Administrace</h1>
+        <p class="admin-eyebrow">ŠAPI Foto · Správa focení</p>
+      </div>
     </div>
+  </header>
 
-    <div class="admin-note">
-        Tato stránka není určena pro veřejnou navigaci a má nastavené
-        <strong>noindex / nofollow</strong>. Samotný rozcestník ale není
-        bezpečnostní ochrana – zabezpečení jednotlivých funkcí zajišťují
-        jejich vlastní administrační mechanismy.
-    </div>
+  <p class="admin-intro">Všechny stávající nástroje na jednom místě. Vyberte oblast, kterou potřebujete spravovat. Jednotlivé nástroje zatím používají své dosavadní procesy a datové zdroje.</p>
 
+  <div class="admin-section-heading">
+    <h2>Správa focení</h2>
+    <p>Hlavní pracovní nástroje</p>
+  </div>
+  <section class="admin-grid" aria-label="Hlavní administrační nástroje">
+    <a class="admin-card" href="admin-foceni.html">
+      <div class="admin-card-icon" aria-hidden="true">📅</div>
+      <div class="admin-card-body">
+        <h3>Soutěž a objednávky</h3>
+        <p>Nastavení aktuální soutěže, termínu, kategorií a spuštění nebo zastavení příjmu objednávek.</p>
+        <div class="admin-card-action"><span>Otevřít správu focení</span><span aria-hidden="true">→</span></div>
+      </div>
+    </a>
+    <a class="admin-card" href="admin-album.html">
+      <div class="admin-card-icon" aria-hidden="true">🖼️</div>
+      <div class="admin-card-body">
+        <h3>Odeslání hotových fotografií</h3>
+        <p>Načtení objednávky, kontrola údajů zákazníka a vložení odkazů na alba před odesláním e-mailu.</p>
+        <div class="admin-card-action"><span>Otevřít odesílání alb</span><span aria-hidden="true">→</span></div>
+      </div>
+    </a>
+    <a class="admin-card" href="admin-upominky.html">
+      <div class="admin-card-icon" aria-hidden="true">✉️</div>
+      <div class="admin-card-body">
+        <h3>Platby a upomínky</h3>
+        <p>Přehled nedoplatků podle soutěže, výběr příjemců a odeslání připomenutí platby.</p>
+        <div class="admin-card-action"><span>Otevřít upomínky</span><span aria-hidden="true">→</span></div>
+      </div>
+    </a>
+    <a class="admin-card" href="qrplatba.html">
+      <div class="admin-card-icon" aria-hidden="true">💳</div>
+      <div class="admin-card-body">
+        <h3>QR platba</h3>
+        <p>Samostatné vytvoření QR platby s částkou a variabilním symbolem objednávky.</p>
+        <div class="admin-card-action"><span>Otevřít generátor</span><span aria-hidden="true">→</span></div>
+      </div>
+    </a>
+  </section>
+
+  <aside class="admin-safety">
+    <div class="admin-safety-icon" aria-hidden="true">🛡️</div>
+    <div><strong>Bezpečná nadstavba, ne přepis systému.</strong><br>
+      Tato úprava mění pouze administrační rozcestník. Nemění objednávkový formulář, Google Sheets, Google Apps Script, e-mailové šablony, výpočty plateb ani stávající odesílací procesy. Každý nástroj zůstává dostupný i samostatně.</div>
+  </aside>
+  <p class="admin-footer">Administrace není součástí veřejné navigace. Nastavení noindex samo o sobě nenahrazuje ověření oprávnění.</p>
 </div>
 </main>
-
 </div>
-
 <script defer src="main.js"></script>
 </body>
 </html>
