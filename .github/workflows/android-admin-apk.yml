@@ -67,7 +67,8 @@ jobs:
         run: yes | "$SDKMANAGER" --licenses >/dev/null || true
 
       - name: Install Android platform and build tools
-        run: "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
+        run: |
+          "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
 
       - name: Validate Gradle configuration
         working-directory: android-admin
