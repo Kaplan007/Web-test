@@ -1,6 +1,10 @@
 package cz.sapifoto.admin;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.SharedPreferences;
+import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyProperties;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Color;
@@ -26,6 +30,16 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.net.http.SslError;
 import android.widget.Button;
+import android.widget.EditText;
+import android.text.InputType;
+import android.util.Base64;
+import org.json.JSONTokener;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyStore;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -38,6 +52,10 @@ public class MainActivity extends Activity {
     private static final int INK = Color.rgb(41, 35, 31);
     private static final int ACCENT = Color.rgb(164, 95, 32);
     private static final int BG = Color.rgb(250, 247, 243);
+    private static final String KEY_ALIAS = "sapifoto_admin_password_key";
+    private static final String PREFS = "secure_admin_credentials";
+    private static final String PREF_IV = "password_iv";
+    private static final String PREF_CIPHER = "password_ciphertext";
 
     private WebView webView;
     private ProgressBar progress;
@@ -107,6 +125,14 @@ public class MainActivity extends Activity {
         refresh.setAllCaps(false);
         refresh.setOnClickListener(v -> loadHomeOrReload());
         toolbar.addView(refresh, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, dp(44)));
+
+        Button passwordButton = new Button(this);
+        passwordButton.setText("Heslo");
+        passwordButton.setTextColor(ACCENT);
+        passwordButton.setAllCaps(false);
+        passwordButton.setOnClickListener(v -> showPasswordOptions());
+        toolbar.addView(passwordButton, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, dp(44)));
 
         progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
@@ -224,6 +250,7 @@ public class MainActivity extends Activity {
             public void onPageFinished(WebView view, String url) {
                 progress.setVisibility(View.GONE);
                 errorPanel.setVisibility(View.GONE);
+                if (isTrustedAdminUrl(url)) autofillSavedPassword();
             }
 
             @Override
@@ -237,6 +264,131 @@ public class MainActivity extends Activity {
                 showLoadError();
             }
         });
+    }
+
+
+    private boolean isTrustedAdminUrl(String url) {
+        try {
+            Uri uri = Uri.parse(url);
+            String host = uri.getHost() == null ? "" : uri.getHost().toLowerCase();
+            return "https".equalsIgnoreCase(uri.getScheme())
+                    && (HOST_MAIN.equals(host) || HOST_APEX.equals(host));
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private void showPasswordOptions() {
+        String[] options = {"Zapamatovat heslo z aktuální stránky", "Zadat nebo změnit uložené heslo", "Smazat uložené heslo"};
+        new AlertDialog.Builder(this).setTitle("Uložení admin hesla")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) savePasswordFromCurrentPage();
+                    else if (which == 1) promptForPassword();
+                    else if (which == 2) {
+                        getSharedPreferences(PREFS, MODE_PRIVATE).edit().clear().apply();
+                        showPasswordMessage("Uložené heslo bylo smazáno.");
+                    }
+                }).setNegativeButton("Zrušit", null).show();
+    }
+
+    private void savePasswordFromCurrentPage() {
+        if (webView == null || !isTrustedAdminUrl(webView.getUrl())) {
+            showPasswordMessage("Otevři nejprve stránku administrace s polem pro heslo.");
+            return;
+        }
+        String js = "(function(){var e=document.querySelector('input[type=password]');return JSON.stringify(e ? e.value : '');})()";
+        webView.evaluateJavascript(js, value -> {
+            try {
+                Object parsed = new JSONTokener(value).nextValue();
+                String password = parsed instanceof String ? (String) parsed : "";
+                if (password.trim().isEmpty()) {
+                    showPasswordMessage("Na aktuální stránce není vyplněné heslo. Nejprve ho zadej do formuláře.");
+                    return;
+                }
+                encryptAndStorePassword(password);
+                showPasswordMessage("Heslo je bezpečně uloženo v tomto zařízení a bude se předvyplňovat v administraci.");
+            } catch (Exception e) {
+                showPasswordMessage("Heslo se nepodařilo uložit. Zkus zadání ručně přes nabídku Heslo.");
+            }
+        });
+    }
+
+    private void promptForPassword() {
+        EditText input = new EditText(this);
+        input.setSingleLine(true);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setHint("Administrační heslo");
+        int padding = dp(20);
+        input.setPadding(padding, dp(12), padding, dp(12));
+        new AlertDialog.Builder(this).setTitle("Zapamatovat admin heslo")
+                .setMessage("Heslo bude zašifrované uložené pouze v tomto zařízení.")
+                .setView(input)
+                .setPositiveButton("Uložit", (dialog, which) -> {
+                    String password = input.getText().toString();
+                    if (password.isEmpty()) showPasswordMessage("Prázdné heslo nelze uložit.");
+                    else {
+                        try {
+                            encryptAndStorePassword(password);
+                            autofillSavedPassword();
+                            showPasswordMessage("Heslo je bezpečně uloženo.");
+                        } catch (Exception e) {
+                            showPasswordMessage("Heslo se nepodařilo bezpečně uložit.");
+                        }
+                    }
+                }).setNegativeButton("Zrušit", null).show();
+    }
+
+    private void showPasswordMessage(String message) {
+        new AlertDialog.Builder(this).setMessage(message).setPositiveButton("OK", null).show();
+    }
+
+    private void encryptAndStorePassword(String password) throws Exception {
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, getOrCreateSecretKey());
+        byte[] encrypted = cipher.doFinal(password.getBytes(StandardCharsets.UTF_8));
+        getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+                .putString(PREF_IV, Base64.encodeToString(cipher.getIV(), Base64.NO_WRAP))
+                .putString(PREF_CIPHER, Base64.encodeToString(encrypted, Base64.NO_WRAP)).apply();
+    }
+
+    private String decryptStoredPassword() {
+        try {
+            SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+            String ivText = prefs.getString(PREF_IV, null);
+            String cipherText = prefs.getString(PREF_CIPHER, null);
+            if (ivText == null || cipherText == null) return null;
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.DECRYPT_MODE, getOrCreateSecretKey(),
+                    new GCMParameterSpec(128, Base64.decode(ivText, Base64.NO_WRAP)));
+            return new String(cipher.doFinal(Base64.decode(cipherText, Base64.NO_WRAP)), StandardCharsets.UTF_8);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private SecretKey getOrCreateSecretKey() throws Exception {
+        KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+        keyStore.load(null);
+        java.security.Key existing = keyStore.getKey(KEY_ALIAS, null);
+        if (existing instanceof SecretKey) return (SecretKey) existing;
+        KeyGenerator generator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+        generator.init(new KeyGenParameterSpec.Builder(KEY_ALIAS,
+                KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                .setRandomizedEncryptionRequired(true).build());
+        return generator.generateKey();
+    }
+
+    private void autofillSavedPassword() {
+        String password = decryptStoredPassword();
+        if (password == null || webView == null || !isTrustedAdminUrl(webView.getUrl())) return;
+        String encoded = org.json.JSONObject.quote(password);
+        String js = "(function(){var p=" + encoded + ";var fields=document.querySelectorAll('input[type=password]');"
+                + "fields.forEach(function(e){if(!e.value){e.value=p;"
+                + "e.dispatchEvent(new Event('input',{bubbles:true}));"
+                + "e.dispatchEvent(new Event('change',{bubbles:true}));}});})()";
+        webView.evaluateJavascript(js, null);
     }
 
     private void openExternal(Uri uri) {
