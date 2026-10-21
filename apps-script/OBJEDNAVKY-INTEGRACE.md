@@ -6,14 +6,14 @@ Tento doplněk je záměrně oddělený od stávajícího Apps Scriptu. Nemění
 
 1. Vytvoř zálohu aktuálního projektu Apps Script (Projekt → Vytvořit kopii nebo export zdrojového kódu).
 2. Přidej obsah souboru `objednavky-admin-addon.gs` jako nový soubor do **stejného** Apps Script projektu, který používá současný web.
-3. V existující funkci `doPost(e)`, hned pod řádek `const action = clean(e.parameter.action);`, přidej pouze tyto nové větve:
+3. V existující funkci `doPost(e)`, hned pod řádek `const action = clean(e.parameter.action);`, přidej tyto nové větve:
    ```javascript
    if (action === "adminOrdersLoad") return handleAdminOrdersLoad_(e.parameter);
-   if (action === "adminOrdersPaid") return handleAdminOrdersPaid_(e.parameter);
+   if (action === "adminOrdersPaid") return handleAdminOrdersPaid_(e.parameter);\n   if (action === "adminAlbumUrlsLoad") return handleAdminAlbumUrlsLoad_(e.parameter);
    ```
-4. V existující funkci `doGet(e)`, hned pod určení `action`, přidej:
+4. V existující funkci `doGet(e)`, hned pod určení `action`, přidej obě větve:
    ```javascript
-   if (action === "getAdminOrdersStatus") return getAdminOrdersStatus_(params);
+   if (action === "getAdminOrdersStatus") return getAdminOrdersStatus_(params);\n   if (action === "getAdminAlbumUrlsStatus") return getAdminAlbumUrlsStatus_(params);
    ```
 5. Ostatní řádky ponech beze změny. Ulož a otestuj nejprve na kopii tabulky. Teprve po úspěšném testu aktualizuj existující nasazení jako novou verzi.
 
@@ -21,7 +21,7 @@ Tento doplněk je záměrně oddělený od stávajícího Apps Scriptu. Nemění
 
 - Zdroj je existující list `Objednávky` ve stávající tabulce.
 - Soutěž A, číslo objednávky J, položky W, cena X, zaplaceno Y, poznámka Z a upomínka AA.
-- Více položek objednávky se čte z JSON ve W; sloupec T může obsahovat více odkazů.
+- Více položek objednávky se čte z JSON ve W. Při odesílání fotografií se odkazy načítají z T pro všechny řádky se stejným číslem objednávky v J. Odkazy se přiřazují v pořadí řádků a položek; pokud počet nesouhlasí, odeslání se zablokuje.
 - Načítání nic nepřepisuje.
 - Úhrada se mění pouze v Y a jen pokud číslo objednávky odpovídá právě jednomu řádku.
 - Je vyžadováno stávající administrační heslo z Script Properties `ADMIN_PASSWORD`.
