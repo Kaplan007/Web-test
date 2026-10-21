@@ -165,3 +165,60 @@ function adminOrdersMoney_(value) {
   var number = Number(text);
   return Number.isFinite(number) ? number : 0;
 }
+
+
+/**
+ * Read album URLs from column T for every row belonging to an order.
+ * This is read-only and deliberately separate from the existing album sender.
+ */
+function handleAdminAlbumUrlsLoad_(data) {
+  var requestId = "";
+  try {
+    verifyAlbumAdminPassword(data.password);
+    requestId = validateRequestId(data.request_id);
+    var orderNumber = String(data.order_number || "").trim();
+    if (!/^\\d{1,10}$/.test(orderNumber)) throw new Error("Neplatné číslo objednávky.");
+
+    var sheet = getOrderSheet();
+    var lastRow = sheet.getLastRow();
+    if (lastRow < 2) throw new Error("Tabulka neobsahuje žádné objednávky.");
+    var rows = sheet.getRange(2, 1, lastRow - 1, Math.max(27, sheet.getLastColumn())).getDisplayValues();
+    var matches = [];
+    rows.forEach(function (r, i) {
+      if (String(r[9] || "").trim() !== orderNumber) return;
+      var url = String(r[19] || "").trim(); // Column T.
+      var items = [];
+      try {
+        var parsed = JSON.parse(String(r[22] || "[]")); // Column W.
+        if (Array.isArray(parsed)) items = parsed;
+      } catch (ignore) {}
+      var count = Math.max(1, items.length);
+      for (var j = 0; j < count; j++) {
+        matches.push({ rowNumber: i + 2, albumUrl: url });
+      }
+    });
+    if (!matches.length) throw new Error("Objednávka č. " + orderNumber + " nebyla nalezena.");
+
+    setRequestStatus("DN_ADMIN_ALBUM_URLS", requestId, {
+      state: "DONE", ok: true, orderNumber: orderNumber,
+      urls: matches, message: "Odkazy na alba byly načteny."
+    });
+    return jsonResponse({ status: "OK", message: "Odkazy na alba byly načteny." });
+  } catch (error) {
+    var message = safeErrorText(error);
+    if (requestId) setRequestStatus("DN_ADMIN_ALBUM_URLS", requestId, {
+      state: "DONE", ok: false, message: message
+    });
+    return jsonResponse({ status: "ERROR", message: message });
+  }
+}
+
+function getAdminAlbumUrlsStatus_(params) {
+  try {
+    var requestId = validateRequestId(params.requestId || params.request_id);
+    var status = getRequestStatus("DN_ADMIN_ALBUM_URLS", requestId) || { state: "UNKNOWN" };
+    return jsonpResponse({ status: "OK", requestStatus: status }, params.callback);
+  } catch (error) {
+    return jsonpResponse({ status: "ERROR", message: safeErrorText(error) }, params.callback);
+  }
+}
