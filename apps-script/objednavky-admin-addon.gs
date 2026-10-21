@@ -159,7 +159,7 @@ function handleAdminOrdersPaid_(data) {
 }
 
 function adminOrdersMoney_(value) {
-  var text = String(value == null ? "" : value).trim().replace(/\s/g, "").replace(",", ".");
+  var text = String(value == null ? "" : value).trim().replace(/[^0-9,.-]/g, "").replace(",", ".");
   var number = Number(text);
   return Number.isFinite(number) ? number : 0;
 }
