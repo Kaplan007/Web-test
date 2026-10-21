@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/android-admin-app
+      - feature/android-admin-dashboard
     paths:
       - 'android-admin/**'
       - '.github/workflows/android-admin-apk.yml'
