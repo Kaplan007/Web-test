@@ -2,7 +2,7 @@
   'use strict';
 
   const APPS_SCRIPT_URL =
-    'https://script.google.com/macros/s/AKfycbysHFdWmBpfyKeNXBBCsYsWTRVsv5cLXiCeEqnc9lLYfdGYGIH8qwjQmYKbjVYjHL82Vw/exec';
+    'https://script.google.com/macros/s/AKfycbzFjxDZ7SWTOgggl7J7npxM8GRTUQ1OM23I_z0naVhTsu7LjNg26BrQUFZbSF_xfGtH-A/exec';
 
   const form = document.getElementById('albumMailForm');
   const passwordInput = document.getElementById('adminPassword');
