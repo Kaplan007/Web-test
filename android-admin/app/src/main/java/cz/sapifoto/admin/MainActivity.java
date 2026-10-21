@@ -44,6 +44,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.ScrollView;
 
 public class MainActivity extends Activity {
     private static final String HOME_URL = "https://www.sapifoto.cz/admin";
@@ -63,6 +64,10 @@ public class MainActivity extends Activity {
     private LinearLayout errorPanel;
     private TextView errorTitle;
     private TextView errorMessage;
+    private LinearLayout homePanel;
+    private LinearLayout webPanel;
+    private TextView webSectionTitle;
+    private String currentSection = "Správa focení";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,52 +85,116 @@ public class MainActivity extends Activity {
     private void buildLayout() {
         root = new FrameLayout(this);
         root.setBackgroundColor(BG);
-
-        // Android 15 / targetSdk 35 lays apps out edge-to-edge by default.
-        // Apply system-bar insets to the root so the toolbar and WebView stay
-        // between the status bar and gesture/navigation bar on all supported APIs.
         root.setOnApplyWindowInsetsListener((view, insets) -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
                 view.setPadding(bars.left, bars.top, bars.right, bars.bottom);
             } else {
-                view.setPadding(
-                        insets.getSystemWindowInsetLeft(),
-                        insets.getSystemWindowInsetTop(),
-                        insets.getSystemWindowInsetRight(),
-                        insets.getSystemWindowInsetBottom());
+                view.setPadding(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(),
+                        insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
             }
             return insets;
         });
 
-        LinearLayout page = new LinearLayout(this);
-        page.setOrientation(LinearLayout.VERTICAL);
-        root.addView(page, new FrameLayout.LayoutParams(
+        homePanel = new LinearLayout(this);
+        homePanel.setOrientation(LinearLayout.VERTICAL);
+        homePanel.setPadding(dp(20), dp(16), dp(20), dp(20));
+        homePanel.setBackgroundColor(BG);
+        ScrollView homeScroll = new ScrollView(this);
+        homeScroll.setFillViewport(true);
+        homeScroll.addView(homePanel);
+        root.addView(homeScroll, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        LinearLayout brandRow = new LinearLayout(this);
+        brandRow.setOrientation(LinearLayout.VERTICAL);
+        brandRow.setPadding(dp(4), dp(10), dp(4), dp(22));
+        homePanel.addView(brandRow);
+        TextView brand = new TextView(this);
+        brand.setText("ŠAPI FOTO");
+        brand.setTextColor(INK);
+        brand.setTextSize(28);
+        brand.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        brandRow.addView(brand);
+        TextView subtitle = new TextView(this);
+        subtitle.setText("ADMINISTRACE");
+        subtitle.setTextColor(ACCENT);
+        subtitle.setTextSize(12);
+        subtitle.setLetterSpacing(0.14f);
+        subtitle.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        LinearLayout.LayoutParams subtitleParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        subtitleParams.topMargin = dp(4);
+        brandRow.addView(subtitle, subtitleParams);
+        TextView intro = new TextView(this);
+        intro.setText("Co potřebujete právě vyřídit?");
+        intro.setTextColor(INK);
+        intro.setTextSize(17);
+        intro.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        LinearLayout.LayoutParams introParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        introParams.bottomMargin = dp(14);
+        homePanel.addView(intro, introParams);
+
+        addSectionCard(homePanel, "Správa focení", "Přehled a správa fotografování", "📷", Color.rgb(244, 231, 216));
+        addSectionCard(homePanel, "Odeslat fotografie", "Navázat na stávající odesílání", "✉", Color.rgb(225, 237, 229));
+        addSectionCard(homePanel, "Upomínky", "Práce se stávajícími upomínkami", "🔔", Color.rgb(249, 235, 207));
+        addSectionCard(homePanel, "QR platba", "Otevřít stávající platební funkce", "▦", Color.rgb(226, 230, 246));
+
+        TextView note = new TextView(this);
+        note.setText("Web a jeho stávající funkce zůstávají beze změny.");
+        note.setTextColor(Color.rgb(112, 105, 98));
+        note.setTextSize(12);
+        note.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams noteParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        noteParams.topMargin = dp(16);
+        homePanel.addView(note, noteParams);
+
+        webPanel = new LinearLayout(this);
+        webPanel.setOrientation(LinearLayout.VERTICAL);
+        webPanel.setBackgroundColor(BG);
+        webPanel.setVisibility(View.GONE);
+        root.addView(webPanel, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         LinearLayout toolbar = new LinearLayout(this);
         toolbar.setOrientation(LinearLayout.HORIZONTAL);
         toolbar.setGravity(Gravity.CENTER_VERTICAL);
-        toolbar.setPadding(dp(18), dp(8), dp(12), dp(8));
+        toolbar.setPadding(dp(8), dp(4), dp(6), dp(4));
         toolbar.setBackgroundColor(Color.WHITE);
-        page.addView(toolbar, new LinearLayout.LayoutParams(
+        webPanel.addView(toolbar, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, dp(58)));
 
-        TextView brand = new TextView(this);
-        brand.setText("ŠAPI FOTO  /  ADMIN");
-        brand.setTextColor(INK);
-        brand.setTextSize(16);
-        brand.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        toolbar.addView(brand, new LinearLayout.LayoutParams(0,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        Button backToSections = new Button(this);
+        backToSections.setText("‹ Sekce");
+        backToSections.setTextColor(ACCENT);
+        backToSections.setAllCaps(false);
+        backToSections.setMinWidth(0);
+        backToSections.setPadding(dp(4), 0, dp(4), 0);
+        backToSections.setOnClickListener(v -> showHome());
+        toolbar.addView(backToSections, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, dp(44)));
+
+        webSectionTitle = new TextView(this);
+        webSectionTitle.setText(currentSection);
+        webSectionTitle.setTextColor(INK);
+        webSectionTitle.setTextSize(14);
+        webSectionTitle.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        webSectionTitle.setMaxLines(2);
+        LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        titleParams.leftMargin = dp(4);
+        toolbar.addView(webSectionTitle, titleParams);
 
         Button refresh = new Button(this);
-        refresh.setText("Obnovit");
+        refresh.setText("↻");
+        refresh.setTextSize(19);
+        refresh.setContentDescription("Obnovit");
         refresh.setTextColor(ACCENT);
         refresh.setAllCaps(false);
         refresh.setOnClickListener(v -> loadHomeOrReload());
-        toolbar.addView(refresh, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, dp(44)));
+        toolbar.addView(refresh, new LinearLayout.LayoutParams(dp(44), dp(44)));
 
         Button passwordButton = new Button(this);
         passwordButton.setText("Heslo");
@@ -138,11 +207,11 @@ public class MainActivity extends Activity {
         progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
         progress.setMax(100);
         progress.setProgressTintList(android.content.res.ColorStateList.valueOf(ACCENT));
-        page.addView(progress, new LinearLayout.LayoutParams(
+        webPanel.addView(progress, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, dp(3)));
 
         webView = new WebView(this);
-        page.addView(webView, new LinearLayout.LayoutParams(
+        webPanel.addView(webView, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
 
         errorPanel = new LinearLayout(this);
@@ -151,7 +220,6 @@ public class MainActivity extends Activity {
         errorPanel.setPadding(dp(28), dp(24), dp(28), dp(24));
         errorPanel.setBackgroundColor(BG);
         errorPanel.setVisibility(View.GONE);
-
         errorTitle = new TextView(this);
         errorTitle.setText("Administraci se nepodařilo načíst");
         errorTitle.setTextColor(INK);
@@ -160,7 +228,6 @@ public class MainActivity extends Activity {
         errorTitle.setGravity(Gravity.CENTER);
         errorPanel.addView(errorTitle, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
         errorMessage = new TextView(this);
         errorMessage.setText("Zkontrolujte připojení k internetu a zkuste to znovu.");
         errorMessage.setTextColor(Color.DKGRAY);
@@ -170,7 +237,6 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         messageParams.topMargin = dp(10);
         errorPanel.addView(errorMessage, messageParams);
-
         Button retry = new Button(this);
         retry.setText("Zkusit znovu");
         retry.setAllCaps(false);
@@ -181,10 +247,87 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, dp(48));
         retryParams.topMargin = dp(18);
         errorPanel.addView(retry, retryParams);
-
         root.addView(errorPanel, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
+    }
+
+    private void addSectionCard(LinearLayout parent, String title, String description,
+                                String symbol, int iconBackground) {
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.HORIZONTAL);
+        card.setGravity(Gravity.CENTER_VERTICAL);
+        card.setPadding(dp(14), dp(12), dp(12), dp(12));
+        GradientDrawable cardBackground = new GradientDrawable();
+        cardBackground.setColor(Color.WHITE);
+        cardBackground.setCornerRadius(dp(16));
+        cardBackground.setStroke(dp(1), Color.rgb(236, 230, 223));
+        card.setBackground(cardBackground);
+        card.setElevation(dp(2));
+        card.setClickable(true);
+        card.setFocusable(true);
+
+        TextView icon = new TextView(this);
+        icon.setText(symbol);
+        icon.setTextSize(25);
+        icon.setGravity(Gravity.CENTER);
+        GradientDrawable iconShape = new GradientDrawable();
+        iconShape.setColor(iconBackground);
+        iconShape.setCornerRadius(dp(13));
+        icon.setBackground(iconShape);
+        card.addView(icon, new LinearLayout.LayoutParams(dp(54), dp(54)));
+
+        LinearLayout labels = new LinearLayout(this);
+        labels.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams labelsParams = new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        labelsParams.leftMargin = dp(14);
+        labelsParams.rightMargin = dp(8);
+        card.addView(labels, labelsParams);
+        TextView heading = new TextView(this);
+        heading.setText(title);
+        heading.setTextColor(INK);
+        heading.setTextSize(16);
+        heading.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        labels.addView(heading);
+        TextView detail = new TextView(this);
+        detail.setText(description);
+        detail.setTextColor(Color.rgb(112, 105, 98));
+        detail.setTextSize(12);
+        LinearLayout.LayoutParams detailParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        detailParams.topMargin = dp(4);
+        labels.addView(detail, detailParams);
+        TextView arrow = new TextView(this);
+        arrow.setText("›");
+        arrow.setTextColor(ACCENT);
+        arrow.setTextSize(30);
+        card.addView(arrow);
+
+        card.setOnClickListener(v -> openSection(title));
+        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        cardParams.bottomMargin = dp(12);
+        parent.addView(card, cardParams);
+    }
+
+    private void openSection(String section) {
+        currentSection = section;
+        webSectionTitle.setText(section);
+        homePanel.setVisibility(View.GONE);
+        webPanel.setVisibility(View.VISIBLE);
+        if (webView.getUrl() == null) loadHome();
+        else {
+            errorPanel.setVisibility(View.GONE);
+            webView.setVisibility(View.VISIBLE);
+            webView.reload();
+        }
+    }
+
+    private void showHome() {
+        webPanel.setVisibility(View.GONE);
+        errorPanel.setVisibility(View.GONE);
+        homePanel.setVisibility(View.VISIBLE);
     }
 
     private GradientDrawable tintedButton() {
@@ -444,8 +587,10 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) webView.goBack();
-        else super.onBackPressed();
+        if (webPanel != null && webPanel.getVisibility() == View.VISIBLE) {
+            if (webView != null && webView.canGoBack()) webView.goBack();
+            else showHome();
+        } else super.onBackPressed();
     }
 
     @Override
