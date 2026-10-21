@@ -27,6 +27,9 @@ jobs:
     name: Build installable debug APK
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,11 +45,29 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      # GitHub-hosted Ubuntu images already contain the Android SDK.
+      # Avoid setup-android@v3 here: it attempts to install the obsolete
+      # SDK package "tools", which now fails with "Failed to find package".
+      - name: Configure preinstalled Android SDK
+        shell: bash
+        run: |
+          test -d "$ANDROID_HOME"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
+          if [ -z "$SDKMANAGER" ]; then
+            echo "::error::Android sdkmanager not found under $ANDROID_HOME/cmdline-tools"
+            exit 1
+          fi
+          echo "$(dirname "$SDKMANAGER")" >> "$GITHUB_PATH"
+          echo "SDKMANAGER=$SDKMANAGER" >> "$GITHUB_ENV"
+          "$SDKMANAGER" --version
+
+      - name: Accept Android SDK licenses
+        shell: bash
+        run: yes | "$SDKMANAGER" --licenses >/dev/null || true
 
       - name: Install Android platform and build tools
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+        run: "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
 
       - name: Validate Gradle configuration
         working-directory: android-admin
