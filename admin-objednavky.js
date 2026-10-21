@@ -1,6 +1,6 @@
 (function () {
 'use strict';
-const API='https://script.google.com/macros/s/AKfycbysHFdWmBpfyKeNXBBCsYsWTRVsv5cLXiCeEqnc9lLYfdGYGIH8qwjQmYKbjVYjHL82Vw/exec';
+const API='https://script.google.com/macros/s/AKfycbzFjxDZ7SWTOgggl7J7npxM8GRTUQ1OM23I_z0naVhTsu7LjNg26BrQUFZbSF_xfGtH-A/exec';
 const password=document.getElementById('adminPassword'),loadBtn=document.getElementById('loadBtn'),statusBox=document.getElementById('status');
 const overview=document.getElementById('overview'),competition=document.getElementById('competition'),search=document.getElementById('search'),ordersBox=document.getElementById('orders');
 let allOrders=[],busy=false;
