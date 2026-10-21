@@ -136,6 +136,7 @@ public class MainActivity extends Activity {
         introParams.bottomMargin = dp(14);
         homePanel.addView(intro, introParams);
 
+        addSectionCard(homePanel, "Objednávky", "Přehled objednávek podle soutěže, typu a úhrady", "🧾", Color.rgb(226, 230, 246));
         addSectionCard(homePanel, "Správa focení", "Přehled a správa fotografování", "📷", Color.rgb(244, 231, 216));
         addSectionCard(homePanel, "Odeslat fotografie", "Navázat na stávající odesílání", "✉", Color.rgb(225, 237, 229));
         addSectionCard(homePanel, "Upomínky", "Práce se stávajícími upomínkami", "🔔", Color.rgb(249, 235, 207));
@@ -320,6 +321,9 @@ public class MainActivity extends Activity {
         webView.setVisibility(View.VISIBLE);
         String targetUrl;
         switch (section) {
+            case "Objednávky":
+                targetUrl = HOME_URL;
+                break;
             case "Správa focení":
                 targetUrl = "https://www.sapifoto.cz/admin-foceni.html";
                 break;
