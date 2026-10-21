@@ -45,8 +45,10 @@ function handleAdminOrdersLoad_(data) {
         var parsed = JSON.parse(String(r[22] || "[]"));
         if (Array.isArray(parsed)) items = parsed.map(function (item) {
           return {
-            name: String((item && (item.name || item.title || item.category)) || ""),
+            name: String((item && (item.name || item.title || item.type || (Array.isArray(item.dancers) ? item.dancers.join(" + ") : ""))) || ""),
             category: String((item && item.category) || ""),
+            type: String((item && item.type) || ""),
+            dancers: item && Array.isArray(item.dancers) ? item.dancers : [],
             albumUrl: String((item && item.albumUrl) || "")
           };
         });
