@@ -9,11 +9,13 @@ Tento doplněk je záměrně oddělený od stávajícího Apps Scriptu. Nemění
 3. V existující funkci `doPost(e)`, hned pod řádek `const action = clean(e.parameter.action);`, přidej tyto nové větve:
    ```javascript
    if (action === "adminOrdersLoad") return handleAdminOrdersLoad_(e.parameter);
-   if (action === "adminOrdersPaid") return handleAdminOrdersPaid_(e.parameter);\n   if (action === "adminAlbumUrlsLoad") return handleAdminAlbumUrlsLoad_(e.parameter);
+   if (action === "adminOrdersPaid") return handleAdminOrdersPaid_(e.parameter);
+   if (action === "adminAlbumUrlsLoad") return handleAdminAlbumUrlsLoad_(e.parameter);
    ```
 4. V existující funkci `doGet(e)`, hned pod určení `action`, přidej obě větve:
    ```javascript
-   if (action === "getAdminOrdersStatus") return getAdminOrdersStatus_(params);\n   if (action === "getAdminAlbumUrlsStatus") return getAdminAlbumUrlsStatus_(params);
+   if (action === "getAdminOrdersStatus") return getAdminOrdersStatus_(params);
+   if (action === "getAdminAlbumUrlsStatus") return getAdminAlbumUrlsStatus_(params);
    ```
 5. Ostatní řádky ponech beze změny. Ulož a otestuj nejprve na kopii tabulky. Teprve po úspěšném testu aktualizuj existující nasazení jako novou verzi.
 
