@@ -314,11 +314,13 @@ public class MainActivity extends Activity {
 
     private void openSection(String section) {
         if ("Objednávky".equals(section)) {
-            new AlertDialog.Builder(this)
-                    .setTitle("Objednávky")
-                    .setMessage("Návrh obrazovky je připraven. Pro bezpečné načtení všech objednávek je potřeba doplnit samostatnou čtecí akci do Google Apps Scriptu. Stávající akce pro upomínky vrací pouze neuhrazené objednávky, takže je nelze použít jako úplný přehled. Web ani stávající funkce nebudou měněny.")
-                    .setPositiveButton("Rozumím", (dialog, which) -> {})
-                    .show();
+            currentSection = section;
+            webSectionTitle.setText(section);
+            homePanel.setVisibility(View.GONE);
+            webPanel.setVisibility(View.VISIBLE);
+            errorPanel.setVisibility(View.GONE);
+            webView.setVisibility(View.VISIBLE);
+            webView.loadUrl("https://www.sapifoto.cz/admin-objednavky.html");
             return;
         }
         currentSection = section;
@@ -329,9 +331,6 @@ public class MainActivity extends Activity {
         webView.setVisibility(View.VISIBLE);
         String targetUrl;
         switch (section) {
-            case "Objednávky":
-                targetUrl = HOME_URL;
-                break;
             case "Správa focení":
                 targetUrl = "https://www.sapifoto.cz/admin-foceni.html";
                 break;
