@@ -316,12 +316,28 @@ public class MainActivity extends Activity {
         webSectionTitle.setText(section);
         homePanel.setVisibility(View.GONE);
         webPanel.setVisibility(View.VISIBLE);
-        if (webView.getUrl() == null) loadHome();
-        else {
-            errorPanel.setVisibility(View.GONE);
-            webView.setVisibility(View.VISIBLE);
-            webView.reload();
+        errorPanel.setVisibility(View.GONE);
+        webView.setVisibility(View.VISIBLE);
+        String targetUrl;
+        switch (section) {
+            case "Správa focení":
+                targetUrl = "https://www.sapifoto.cz/admin-foceni.html";
+                break;
+            case "Odeslat fotografie":
+                targetUrl = "https://www.sapifoto.cz/admin-album.html";
+                break;
+            case "Upomínky":
+                targetUrl = "https://www.sapifoto.cz/admin-upominky.html";
+                break;
+            case "QR platba":
+                targetUrl = "https://www.sapifoto.cz/qrplatba.html";
+                break;
+            default:
+                targetUrl = HOME_URL;
+                break;
         }
+        if (!targetUrl.equals(webView.getUrl())) webView.loadUrl(targetUrl);
+        else webView.reload();
     }
 
     private void showHome() {
