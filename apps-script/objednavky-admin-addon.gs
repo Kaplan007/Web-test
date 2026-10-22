@@ -177,7 +177,7 @@ function handleAdminAlbumUrlsLoad_(data) {
     verifyAlbumAdminPassword(data.password);
     requestId = validateRequestId(data.request_id);
     var orderNumber = String(data.order_number || "").trim();
-    if (!/^\\d{1,10}$/.test(orderNumber)) throw new Error("Neplatné číslo objednávky.");
+    if (!/^\d{1,10}$/.test(orderNumber)) throw new Error("Neplatné číslo objednávky.");
 
     var sheet = getOrderSheet();
     var lastRow = sheet.getLastRow();
