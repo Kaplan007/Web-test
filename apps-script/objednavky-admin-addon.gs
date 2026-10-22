@@ -168,8 +168,11 @@ function adminOrdersMoney_(value) {
 
 
 /**
- * Read album URLs from column T for every row belonging to an order.
- * This is read-only and deliberately separate from the existing album sender.
+ * Read album URLs and item details across every row sharing the order number.
+ * Column T is authoritative for a single-item row. For a row storing several
+ * items in W, existing per-item URLs in W are retained; T supplies the first
+ * item's URL only if that item has no URL. A single T URL is never duplicated
+ * across several items.
  */
 function handleAdminAlbumUrlsLoad_(data) {
   var requestId = "";
@@ -179,31 +182,23 @@ function handleAdminAlbumUrlsLoad_(data) {
     var orderNumber = String(data.order_number || "").trim();
     if (!/^\d{1,10}$/.test(orderNumber)) throw new Error("Neplatné číslo objednávky.");
 
-    var sheet = getOrderSheet();
-    var lastRow = sheet.getLastRow();
-    if (lastRow < 2) throw new Error("Tabulka neobsahuje žádné objednávky.");
-    var rows = sheet.getRange(2, 1, lastRow - 1, Math.max(27, sheet.getLastColumn())).getDisplayValues();
-    var matches = [];
-    rows.forEach(function (r, i) {
-      if (String(r[9] || "").trim() !== orderNumber) return;
-      var url = String(r[19] || "").trim(); // Column T.
-      var items = [];
-      try {
-        var parsed = JSON.parse(String(r[22] || "[]")); // Column W.
-        if (Array.isArray(parsed)) items = parsed;
-      } catch (ignore) {}
-      var count = Math.max(1, items.length);
-      for (var j = 0; j < count; j++) {
-        matches.push({ rowNumber: i + 2, albumUrl: url });
-      }
+    var order = adminAlbumGetOrderMultiRow_(orderNumber);
+    var items = [];
+    order.groups.forEach(function (group) {
+      group.items.forEach(function (item) { items.push(item); });
     });
-    if (!matches.length) throw new Error("Objednávka č. " + orderNumber + " nebyla nalezena.");
 
+    var urls = items.map(function (item, index) {
+      return { index: index, albumUrl: String(item.albumUrl || "") };
+    });
     setRequestStatus("DN_ADMIN_ALBUM_URLS", requestId, {
       state: "DONE", ok: true, orderNumber: orderNumber,
-      urls: matches, message: "Odkazy na alba byly načteny."
+      parentName: order.parentName, email: order.email,
+      alreadySent: order.alreadySent, totalPrice: items.length * PRICE_PER_ITEM,
+      items: items, urls: urls,
+      message: "Položky a odkazy na alba byly načteny."
     });
-    return jsonResponse({ status: "OK", message: "Odkazy na alba byly načteny." });
+    return jsonResponse({ status: "OK", message: "Položky a odkazy na alba byly načteny." });
   } catch (error) {
     var message = safeErrorText(error);
     if (requestId) setRequestStatus("DN_ADMIN_ALBUM_URLS", requestId, {
@@ -217,6 +212,202 @@ function getAdminAlbumUrlsStatus_(params) {
   try {
     var requestId = validateRequestId(params.requestId || params.request_id);
     var status = getRequestStatus("DN_ADMIN_ALBUM_URLS", requestId) || { state: "UNKNOWN" };
+    return jsonpResponse({ status: "OK", requestStatus: status }, params.callback);
+  } catch (error) {
+    return jsonpResponse({ status: "ERROR", message: safeErrorText(error) }, params.callback);
+  }
+}
+
+/**
+ * Load a logical order even when legacy/manual data uses several rows with
+ * the same order number. Each physical row remains the owner of its items.
+ */
+function adminAlbumGetOrderMultiRow_(orderNumber) {
+  var sheet = getOrderSheet();
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) throw new Error("Tabulka neobsahuje žádné objednávky.");
+
+  var rows = sheet.getRange(2, 1, lastRow - 1, DN_COLUMNS.TOTAL_PRICE).getDisplayValues();
+  var groups = [];
+  var parentName = "";
+  var email = "";
+  var alreadySent = false;
+
+  rows.forEach(function (row, index) {
+    if (String(row[DN_COLUMNS.ORDER_NUMBER - 1] || "").trim() !== orderNumber) return;
+    var rowNumber = index + 2;
+    var currentParent = String(row[DN_COLUMNS.PARENT_NAME - 1] || "").trim();
+    var currentEmail = String(row[DN_COLUMNS.EMAIL - 1] || "").trim();
+    if (!parentName) parentName = currentParent;
+    if (!email) email = currentEmail;
+    if (currentParent && parentName && currentParent !== parentName) {
+      throw new Error("Jméno rodiče se mezi řádky objednávky liší. Odesílání je zablokováno.");
+    }
+    if (currentEmail && email && currentEmail.toLowerCase() !== email.toLowerCase()) {
+      throw new Error("E-mail se mezi řádky objednávky liší. Odesílání je zablokováno.");
+    }
+    if (String(row[DN_COLUMNS.ALBUM_SENT - 1] || "").trim().toUpperCase() === "ANO") alreadySent = true;
+
+    var rowAlbumUrl = String(row[DN_COLUMNS.ALBUM_URL - 1] || "").trim();
+    try {
+      var rich = sheet.getRange(rowNumber, DN_COLUMNS.ALBUM_URL).getRichTextValue();
+      if (rich && rich.getLinkUrl()) rowAlbumUrl = String(rich.getLinkUrl()).trim();
+    } catch (ignore) {}
+
+    var rowItems;
+    try {
+      rowItems = getStoredOrderItems(row, "");
+    } catch (error) {
+      throw new Error("Řádek " + rowNumber + " objednávky " + orderNumber + ": " + safeErrorText(error));
+    }
+    if (!rowItems.length) throw new Error("V řádku " + rowNumber + " nebyly nalezeny položky.");
+
+    if (rowItems.length === 1) {
+      if (rowAlbumUrl) rowItems[0].albumUrl = rowAlbumUrl;
+    } else if (rowAlbumUrl && !rowItems[0].albumUrl) {
+      // T stores one URL per row, so it can safely fill only the first item.
+      rowItems[0].albumUrl = rowAlbumUrl;
+    }
+
+    groups.push({ rowNumber: rowNumber, items: rowItems });
+  });
+
+  if (!groups.length) throw new Error("Objednávka číslo " + orderNumber + " nebyla v tabulce nalezena.");
+  if (!parentName) throw new Error("V objednávce chybí jméno rodiče.");
+  if (!email) throw new Error("V objednávce chybí e-mail.");
+  email = validateEmail(email);
+
+  return {
+    sheet: sheet,
+    orderNumber: orderNumber,
+    parentName: parentName,
+    email: email,
+    groups: groups,
+    alreadySent: alreadySent
+  };
+}
+
+/**
+ * Multi-row-safe album sender. It writes each URL back to the physical row
+ * that owns the corresponding item and marks all matching rows sent only
+ * after MailApp.sendEmail succeeds.
+ */
+function handleAdminAlbumMailSend_(data) {
+  var requestId = "";
+  var logRow = 0;
+  try {
+    requestId = validateRequestId(data.request_id);
+  } catch (error) {
+    return jsonResponse({ status: "ERROR", message: error.message });
+  }
+
+  setRequestStatus("DN_ADMIN_ALBUM_MAIL", requestId, {
+    state: "PROCESSING", ok: false, message: "E-mail se připravuje."
+  });
+
+  try {
+    enforceAdminAttemptLimit();
+    verifyAlbumAdminPassword(data.password);
+    var orderNumber = String(data.order_number || "").trim();
+    if (!/^\d{1,10}$/.test(orderNumber)) throw new Error("Neplatné číslo objednávky.");
+
+    var order = adminAlbumGetOrderMultiRow_(orderNumber);
+    var items = [];
+    order.groups.forEach(function (group) {
+      group.items.forEach(function (item) { items.push(item); });
+    });
+    var albumInputs = parseAdminAlbumUrls(data.albums_json, items.length);
+    var cursor = 0;
+    order.groups.forEach(function (group) {
+      group.items = group.items.map(function (item) {
+        return {
+          type: item.type,
+          category: item.category,
+          dancers: item.dancers.slice(),
+          price: PRICE_PER_ITEM,
+          albumUrl: albumInputs[cursor++]
+        };
+      });
+    });
+    items = [];
+    order.groups.forEach(function (group) {
+      group.items.forEach(function (item) { items.push(item); });
+    });
+
+    var totalPrice = items.length * PRICE_PER_ITEM;
+    var firstAlbumUrl = items[0].albumUrl;
+
+    // Persist URL + item details per physical row before sending, as the
+    // existing sender does. The sent flag remains unchanged until success.
+    order.groups.forEach(function (group) {
+      var groupJson = JSON.stringify(group.items);
+      order.sheet.getRange(group.rowNumber, DN_COLUMNS.ALBUM_URL).setValue(safeSheetText(group.items[0].albumUrl));
+      order.sheet.getRange(group.rowNumber, DN_COLUMNS.ITEM_COUNT).setValue(group.items.length);
+      order.sheet.getRange(group.rowNumber, DN_COLUMNS.ITEMS_JSON).setValue(safeSheetText(groupJson));
+      order.sheet.getRange(group.rowNumber, DN_COLUMNS.TOTAL_PRICE).setValue(group.items.length * PRICE_PER_ITEM);
+    });
+    SpreadsheetApp.flush();
+
+    var logSheet = getAlbumMailLogSheet();
+    logSheet.appendRow([
+      new Date(),
+      safeSheetText(order.email),
+      safeSheetText(items.map(function (item) { return item.albumUrl; }).join("\n")),
+      safeSheetText(order.orderNumber),
+      totalPrice,
+      "PŘIPRAVUJE SE",
+      requestId
+    ]);
+    logRow = logSheet.getLastRow();
+    SpreadsheetApp.flush();
+
+    var spd = buildPaymentSpd(order.orderNumber, totalPrice);
+    var qrBlob = generatePaymentQrBlob(spd);
+    var subject = "Objednávka číslo " + order.orderNumber + " – fotografie Dance Nation";
+    var plainBody = buildAlbumMailPlainBody(order.orderNumber, items, totalPrice);
+    var htmlBody = buildAlbumMailHtmlBody(order.orderNumber, items, totalPrice);
+
+    MailApp.sendEmail({
+      to: order.email,
+      subject: subject,
+      body: plainBody,
+      htmlBody: htmlBody,
+      inlineImages: { paymentQr: qrBlob },
+      replyTo: MUJ_EMAIL,
+      name: "ŠAPI Foto"
+    });
+
+    order.groups.forEach(function (group) {
+      order.sheet.getRange(group.rowNumber, DN_COLUMNS.ALBUM_SENT).setValue("ANO");
+    });
+    SpreadsheetApp.flush();
+    if (logRow) logSheet.getRange(logRow, 6).setValue("ODESLÁNO");
+
+    var result = {
+      state: "DONE", ok: true, email: order.email,
+      vs: order.orderNumber, orderNumber: orderNumber,
+      totalPrice: totalPrice, itemCount: items.length,
+      message: "E-mail byl odeslán a stav odeslání byl zapsán u všech řádků objednávky."
+    };
+    setRequestStatus("DN_ADMIN_ALBUM_MAIL", requestId, result);
+    return jsonResponse({ status: "OK", message: result.message });
+  } catch (error) {
+    var message = error && error.message ? error.message : "E-mail se nepodařilo odeslat.";
+    try {
+      if (logRow) getAlbumMailLogSheet().getRange(logRow, 6).setValue("CHYBA: " + safeErrorText(error));
+    } catch (ignore) {}
+    setRequestStatus("DN_ADMIN_ALBUM_MAIL", requestId, {
+      state: "DONE", ok: false, message: message
+    });
+    console.error("ALBUM MAIL MULTI-ROW CHYBA: " + (error.stack || error));
+    return jsonResponse({ status: "ERROR", message: message });
+  }
+}
+
+function getAdminAlbumMailStatus_(params) {
+  try {
+    var requestId = validateRequestId(params.requestId || params.request_id);
+    var status = getRequestStatus("DN_ADMIN_ALBUM_MAIL", requestId) || { state: "UNKNOWN" };
     return jsonpResponse({ status: "OK", requestStatus: status }, params.callback);
   } catch (error) {
     return jsonpResponse({ status: "ERROR", message: safeErrorText(error) }, params.callback);
