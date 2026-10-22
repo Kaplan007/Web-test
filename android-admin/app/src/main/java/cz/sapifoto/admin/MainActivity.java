@@ -35,6 +35,8 @@ import android.text.InputType;
 import android.util.Base64;
 import org.json.JSONTokener;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.security.KeyStore;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -48,6 +50,7 @@ import android.widget.ScrollView;
 
 public class MainActivity extends Activity {
     private static final String HOME_URL = "https://www.sapifoto.cz/admin";
+    private static final String APP_VERSION = "1.3.1";
     private static final String HOST_MAIN = "www.sapifoto.cz";
     private static final String HOST_APEX = "sapifoto.cz";
     private static final int INK = Color.rgb(41, 35, 31);
@@ -320,7 +323,7 @@ public class MainActivity extends Activity {
             webPanel.setVisibility(View.VISIBLE);
             errorPanel.setVisibility(View.GONE);
             webView.setVisibility(View.VISIBLE);
-            webView.loadUrl("https://www.sapifoto.cz/admin-objednavky.html");
+            loadOrdersFresh();
             return;
         }
         currentSection = section;
@@ -375,7 +378,10 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        settings.setUserAgentString(settings.getUserAgentString() + " SapiFotoAdminAndroid/1.0");
+        // Always fetch current HTML and JavaScript. Stale WebView cache caused Orders to use an old Apps Script endpoint.
+        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        webView.clearCache(true);
+        settings.setUserAgentString(settings.getUserAgentString() + " SapiFotoAdminAndroid/" + APP_VERSION);
 
         CookieManager cookies = CookieManager.getInstance();
         cookies.setAcceptCookie(true);
@@ -581,7 +587,25 @@ public class MainActivity extends Activity {
     private void loadHome() {
         errorPanel.setVisibility(View.GONE);
         webView.setVisibility(View.VISIBLE);
-        webView.loadUrl(HOME_URL);
+        webView.loadUrl(HOME_URL, noCacheHeaders());
+    }
+
+    private void loadOrdersFresh() {
+        if (webView == null) return;
+        errorPanel.setVisibility(View.GONE);
+        webView.setVisibility(View.VISIBLE);
+        webView.stopLoading();
+        String url = "https://www.sapifoto.cz/admin-objednavky.html"
+                + "?appv=" + APP_VERSION.replace(".", "")
+                + "&_=" + System.currentTimeMillis();
+        webView.loadUrl(url, noCacheHeaders());
+    }
+
+    private Map<String, String> noCacheHeaders() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Cache-Control", "no-cache, no-store, max-age=0");
+        headers.put("Pragma", "no-cache");
+        return headers;
     }
 
     private void showLoadError() {
