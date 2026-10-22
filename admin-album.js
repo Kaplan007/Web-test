@@ -252,7 +252,7 @@
       clientData.classList.add('visible');
       sendBtn.disabled = false;
 
-      if (result.alreadySent) {
+      if (urlResult.alreadySent || result.alreadySent) {
         alreadySentWarning.classList.add('visible');
         sendBtn.textContent = 'Odeslat znovu zákazníkovi';
         showStatus('info', 'Objednávka č. ' + loadedOrderNumber + ' byla načtena. Podle sloupce U už byla dříve odeslána.');
