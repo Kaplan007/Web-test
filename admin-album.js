@@ -239,6 +239,9 @@
         showStatus('error', (urlResult && urlResult.message) || 'Odkazy na alba ze sloupce T se nepodařilo načíst. Odesílání je zablokováno.');
         return;
       }
+      parentName.value = urlResult.parentName || result.parentName || '';
+      customerEmail.value = urlResult.email || result.email || '';
+      totalPrice.textContent = String(urlResult.totalPrice == null ? (result.totalPrice || 0) : urlResult.totalPrice) + ' Kč';
       const orderItems = Array.isArray(urlResult.items) ? urlResult.items : (Array.isArray(result.items) ? result.items : []);
       if (urlResult.urls.length !== orderItems.length) {
         clearLoadedOrder();
