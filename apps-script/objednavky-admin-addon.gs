@@ -264,8 +264,8 @@ function adminAlbumGetOrderMultiRow_(orderNumber) {
 
     if (rowItems.length === 1) {
       if (rowAlbumUrl) rowItems[0].albumUrl = rowAlbumUrl;
-    } else if (rowAlbumUrl && !rowItems[0].albumUrl) {
-      // T stores one URL per row, so it can safely fill only the first item.
+    } else if (rowAlbumUrl) {
+      // T stores one URL per row, so it is authoritative for the first item.
       rowItems[0].albumUrl = rowAlbumUrl;
     }
 
