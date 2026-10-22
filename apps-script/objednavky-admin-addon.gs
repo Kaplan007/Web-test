@@ -112,8 +112,8 @@ function getAdminOrdersStatus_(params) {
 function handleAdminOrdersPaid_(data) {
   var requestId = "";
   try {
-    verifyAlbumAdminPassword(data.password);
     requestId = validateRequestId(data.request_id);
+    verifyAlbumAdminPassword(data.password);
     var orderNumber = String(data.order_number || "").trim();
     if (!/^\d{1,10}$/.test(orderNumber)) throw new Error("Neplatné číslo objednávky.");
 
