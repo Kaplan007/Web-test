@@ -28,6 +28,15 @@ Tento doplněk je záměrně oddělený od stávajícího Apps Scriptu. Nemění
 - Úhrada se mění pouze v Y a jen pokud číslo objednávky odpovídá právě jednomu řádku.
 - Je vyžadováno stávající administrační heslo z Script Properties `ADMIN_PASSWORD`.
 
-## Stav integrace
+## Důležitá kontrola před nasazením – více řádků jedné objednávky
 
-Toto je pouze doplněk serverových funkcí. Sám o sobě nezpřístupní novou obrazovku v APK ani se automaticky nenasadí do Google Apps Scriptu. Androidová obrazovka musí volat tyto akce až po přidání větví a aktualizaci existujícího nasazení. Stávající webové funkce tím zůstávají nedotčené.
+Původní funkce `getAlbumOrderData(orderNumber)` používá `findOrderByOrderNumber(...)`, která vrací pouze první řádek s daným číslem objednávky. Samotné připojení nových větví `doPost`/`doGet` proto nestačí pro objednávku, jejíž položky jsou rozložené do více řádků.
+
+Před nasazením je nutné upravit a otestovat také načítání i odesílání alba tak, aby:
+- našlo **všechny** řádky se stejným číslem objednávky ve sloupci J;
+- sestavilo položky ve stejném pořadí jako odpovídající URL ve sloupci T;
+- načetlo rodiče a e-mail z řádku objednávky a bezpečně ověřilo, že se údaje mezi řádky nerozcházejí;
+- po odeslání aktualizovalo stav odeslání konzistentně u všech příslušných řádků, aniž by přepsalo nesouvisející objednávky;
+- zachovalo původní logování a zapsalo `ANO` až po úspěšném odeslání e-mailu.
+
+**Zatím nenasazovat do ostrého provozu.** Odkazy se nyní načítají přes samostatný doplněk, ale plný scénář víceřádkové objednávky není ověřený. Nejprve je třeba integrovat uvedené změny do původního Apps Scriptu a vyzkoušet je na kopii tabulky. Tento doplněk sám o sobě nezpřístupní novou obrazovku v APK ani se automaticky nenasadí do Google Apps Scriptu.
