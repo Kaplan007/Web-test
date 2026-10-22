@@ -1,6 +1,6 @@
 # ŠAPI FOTO – doplněk Přehled objednávek
 
-Tento doplněk je záměrně oddělený od stávajícího Apps Scriptu. Nemění `handleOrder`, `handleSendAlbumMail`, `handleRemindersLoad`, `handleRemindersSend` ani žádnou existující funkci. Čtení objednávek je pouze čtecí operace; změna úhrady zapisuje výhradně do sloupce Y.
+Tento doplněk přidává nové obslužné funkce vedle stávajícího Apps Scriptu. Nevyžaduje přepsání původních funkcí handleOrder, handleSendAlbumMail ani připomínek. Nové odesílání alba používá samostatnou funkci handleAdminAlbumMailSend_, která aktualizuje všechny řádky patřící do objednávky až po úspěšném odeslání e-mailu.
 
 ## Bezpečné zapojení do existujícího Apps Scriptu
 
@@ -11,11 +11,13 @@ Tento doplněk je záměrně oddělený od stávajícího Apps Scriptu. Nemění
    if (action === "adminOrdersLoad") return handleAdminOrdersLoad_(e.parameter);
    if (action === "adminOrdersPaid") return handleAdminOrdersPaid_(e.parameter);
    if (action === "adminAlbumUrlsLoad") return handleAdminAlbumUrlsLoad_(e.parameter);
+   if (action === "adminAlbumMailSend") return handleAdminAlbumMailSend_(e.parameter);
    ```
 4. V existující funkci `doGet(e)`, hned pod určení `action`, přidej obě větve:
    ```javascript
    if (action === "getAdminOrdersStatus") return getAdminOrdersStatus_(params);
    if (action === "getAdminAlbumUrlsStatus") return getAdminAlbumUrlsStatus_(params);
+   if (action === "getAdminAlbumMailStatus") return getAdminAlbumMailStatus_(params);
    ```
 5. Ostatní řádky ponech beze změny. Ulož a otestuj nejprve na kopii tabulky. Teprve po úspěšném testu aktualizuj existující nasazení jako novou verzi.
 
@@ -28,15 +30,24 @@ Tento doplněk je záměrně oddělený od stávajícího Apps Scriptu. Nemění
 - Úhrada se mění pouze v Y a jen pokud číslo objednávky odpovídá právě jednomu řádku.
 - Je vyžadováno stávající administrační heslo z Script Properties `ADMIN_PASSWORD`.
 
-## Důležitá kontrola před nasazením – více řádků jedné objednávky
+## Víceřádkové objednávky a přiřazení URL
 
-Původní funkce `getAlbumOrderData(orderNumber)` používá `findOrderByOrderNumber(...)`, která vrací pouze první řádek s daným číslem objednávky. Samotné připojení nových větví `doPost`/`doGet` proto nestačí pro objednávku, jejíž položky jsou rozložené do více řádků.
+Nové akce načítají všechny řádky se stejným číslem objednávky ve sloupci J. Každý řádek zpracují v pořadí listu a jeho položky ve W v pořadí JSON. Sloupec T poskytne URL pro jednořádkovou položku; u řádku s více položkami doplní URL první položky, pokud už není uložená ve W. **Jedna URL ze sloupce T se nikdy nekopíruje do všech položek.** Pokud v tabulce pro další položky URL chybí, formulář je nechá prázdné k ručnímu doplnění a HTML validace nedovolí odeslat neúplný e-mail.
 
-Před nasazením je nutné upravit a otestovat také načítání i odesílání alba tak, aby:
-- našlo **všechny** řádky se stejným číslem objednávky ve sloupci J;
-- sestavilo položky ve stejném pořadí jako odpovídající URL ve sloupci T;
-- načetlo rodiče a e-mail z řádku objednávky a bezpečně ověřilo, že se údaje mezi řádky nerozcházejí;
-- po odeslání aktualizovalo stav odeslání konzistentně u všech příslušných řádků, aniž by přepsalo nesouvisející objednávky;
-- zachovalo původní logování a zapsalo `ANO` až po úspěšném odeslání e-mailu.
+Nová akce adminAlbumMailSend:
+- znovu načte všechny řádky objednávky a ověří shodu jména rodiče a e-mailu;
+- ověří počet URL a jejich HTTPS formát;
+- zapíše URL a JSON položek do příslušných řádků, nikoli do jiné objednávky;
+- zapíše stav ANO do sloupce U u všech řádků až po úspěšném odeslání e-mailu;
+- zachová logování e-mailu a stav chyby, pokud odeslání selže.
 
-**Zatím nenasazovat do ostrého provozu.** Odkazy se nyní načítají přes samostatný doplněk, ale plný scénář víceřádkové objednávky není ověřený. Nejprve je třeba integrovat uvedené změny do původního Apps Scriptu a vyzkoušet je na kopii tabulky. Tento doplněk sám o sobě nezpřístupní novou obrazovku v APK ani se automaticky nenasadí do Google Apps Scriptu.
+## Nasazení a test
+
+**Zatím nenasazovat do ostrého provozu.** Tento repozitář neumožňuje přímo publikovat Google Apps Script. Před nasazením je nutné:
+1. Vytvořit zálohu existujícího Apps Scriptu.
+2. Přidat obsah apps-script/objednavky-admin-addon.gs do stejného Apps Script projektu.
+3. Doplnit výše uvedené větve do existujících doPost(e) a doGet(e); žádné existující větve neodstraňovat.
+4. Otestovat na kopii tabulky: jednu položku, více položek v jednom řádku W, více řádků se stejným číslem objednávky, chybějící URL, nesouhlasící e-maily a neúspěšné odeslání. Pro testovací e-mail použít kontrolovanou adresu.
+5. Teprve po úspěšném testu nasadit novou verzi webové aplikace Apps Script.
+
+Toto doplnění samo o sobě nezmění živý Apps Script, dokud nebude vloženo a publikováno.
