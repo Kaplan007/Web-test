@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#faf7f3">
+<title>Objednávky – ŠAPI FOTO Admin</title>
+<style>
+:root{color-scheme:light;--ink:#29231f;--muted:#766d65;--accent:#a45f20;--bg:#faf7f3;--line:#e9e0d6;--card:#fff;--green:#25734a;--red:#a43d35}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:#fff;padding:18px 16px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.brand{font-size:11px;font-weight:800;letter-spacing:.16em;color:var(--accent)}h1{font-size:24px;line-height:1.2;margin:5px 0 14px}
+main{max-width:900px;margin:0 auto;padding:16px}
+.panel,.order{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 3px 12px #30201008}
+label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin:0 0 5px}
+input,select{width:100%;min-height:44px;border:1px solid #d9cfc4;border-radius:10px;background:#fff;padding:10px 12px;font:inherit;color:var(--ink)}
+button,.button{border:0;border-radius:11px;min-height:42px;padding:10px 14px;background:var(--accent);color:#fff;font:inherit;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+button.secondary,.button.secondary{background:#f2e9df;color:var(--ink)}button:disabled{opacity:.5;cursor:wait}
+.row{display:flex;gap:10px;align-items:end}.row>*{flex:1;min-width:0}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px}.stat small{display:block;color:var(--muted);font-size:11px}.stat strong{font-size:18px;display:block;margin-top:4px}
+.status{display:none;padding:11px 12px;border-radius:10px;margin:10px 0;font-size:13px}.status.info{display:block;background:#edf2ff;color:#334c91}.status.ok{display:block;background:#e9f6ed;color:#24643c}.status.error{display:block;background:#fff0ed;color:#91352c}
+.order-head{display:flex;justify-content:space-between;gap:10px;align-items:start}.order h2{font-size:17px;margin:0 0 3px}.muted{color:var(--muted);font-size:13px}.price{font-weight:800;white-space:nowrap;text-align:right}.badges{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.badge{border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;background:#f0eae3}.badge.paid{background:#e6f5e9;color:#24643c}.badge.partial{background:#fff1d8;color:#80500a}.badge.unpaid{background:#fce9e7;color:#9a3b32}
+details{border-top:1px solid var(--line);margin-top:10px;padding-top:10px}summary{font-weight:700;cursor:pointer}.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.detail-grid div{min-width:0;overflow-wrap:anywhere}.detail-grid strong{display:block;font-size:11px;color:var(--muted);margin-bottom:3px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button,.actions a{flex:1}
+.empty{text-align:center;color:var(--muted);padding:26px 10px}
+@media(max-width:520px){main{padding:11px}.row{align-items:stretch;flex-direction:column}.stats{gap:6px}.stat{padding:9px}.stat strong{font-size:15px}.detail-grid{grid-template-columns:1fr}.order{padding:12px}.actions>*{min-width:44%}}
+</style>
+</head>
+<body>
+<header><div class="brand">ŠAPI FOTO · ADMINISTRACE</div><h1>Objednávky</h1>
+<div class="row"><div><label for="adminPassword">Administrační heslo</label><input id="adminPassword" type="password" autocomplete="current-password" placeholder="Zadejte heslo"></div><button id="loadBtn">Načíst objednávky</button></div>
+<div id="status" class="status" role="status" aria-live="polite"></div></header>
+<main>
+<section id="overview" hidden>
+<div class="row" style="margin-bottom:12px"><div><label for="competition">Soutěž</label><select id="competition"><option value="">Všechny soutěže</option></select></div><div><label for="search">Hledat</label><input id="search" type="search" placeholder="Číslo, jméno, e-mail…"></div></div>
+<div class="stats"><div class="stat"><small>Objednávky</small><strong id="count">0</strong></div><div class="stat"><small>Celková cena</small><strong id="total">0 Kč</strong></div><div class="stat"><small>Neuhrazeno</small><strong id="owed">0 Kč</strong></div></div>
+<div id="orders"></div>
+</section>
+</main>
+<script src="admin-objednavky.js"></script>
+</body></html>
