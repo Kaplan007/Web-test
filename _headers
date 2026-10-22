@@ -12,3 +12,9 @@
 /admin-upominky.html
   X-Robots-Tag: noindex, nofollow, noarchive
   Cache-Control: no-store
+
+/admin-objednavky.html
+  Cache-Control: no-store
+
+/admin-objednavky.js
+  Cache-Control: no-store
