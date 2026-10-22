@@ -239,7 +239,7 @@
         showStatus('error', (urlResult && urlResult.message) || 'Odkazy na alba ze sloupce T se nepodařilo načíst. Odesílání je zablokováno.');
         return;
       }
-      const orderItems = Array.isArray(result.items) ? result.items : [];
+      const orderItems = Array.isArray(urlResult.items) ? urlResult.items : (Array.isArray(result.items) ? result.items : []);
       if (urlResult.urls.length !== orderItems.length) {
         clearLoadedOrder();
         showStatus('error', 'Počet položek a odkazů v tabulce nesouhlasí (' + orderItems.length + ' položek, ' + urlResult.urls.length + ' odkazů). Odesílání je zablokováno kvůli ochraně před přiřazením nesprávného alba.');
@@ -289,7 +289,7 @@
 
     const requestId = createRequestId('album-send');
     const data = new URLSearchParams();
-    data.set('action', 'sendAlbumMail');
+    data.set('action', 'adminAlbumMailSend');
     data.set('request_id', requestId);
     data.set('password', passwordInput.value);
     data.set('order_number', orderNumber);
@@ -302,7 +302,7 @@
 
     try {
       postAction(data);
-      const result = await waitForResult('getAlbumMailStatus', requestId);
+      const result = await waitForResult('getAdminAlbumMailStatus', requestId);
 
       if (!result) {
         showStatus('error', 'Stav odeslání se nepodařilo ověřit. Neodesílejte zprávu okamžitě znovu – nejprve zkontrolujte e-mail a sloupec U v Google Sheets.');
