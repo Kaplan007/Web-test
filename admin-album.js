@@ -23,7 +23,7 @@
   // Additive hand-off from the Orders overview; manual entry remains unchanged.
   try {
     const requestedOrder = sessionStorage.getItem('sapiAdminOrderNumber');
-    if (requestedOrder && /^\\d{1,10}$/.test(requestedOrder)) {
+    if (requestedOrder && /^\d{1,10}$/.test(requestedOrder)) {
       orderInput.value = requestedOrder;
       sessionStorage.removeItem('sapiAdminOrderNumber');
     }
@@ -224,11 +224,38 @@
       parentName.value = result.parentName || '';
       customerEmail.value = result.email || '';
       totalPrice.textContent = String(result.totalPrice || 0) + ' Kč';
-      renderItems(result.items || []);
+
+      // Fetch every matching row's column-T album URL before enabling send.
+      const urlRequestId = createRequestId('album-urls');
+      const urlRequest = new URLSearchParams();
+      urlRequest.set('action', 'adminAlbumUrlsLoad');
+      urlRequest.set('request_id', urlRequestId);
+      urlRequest.set('password', passwordInput.value);
+      urlRequest.set('order_number', orderNumber);
+      postAction(urlRequest);
+      const urlResult = await waitForResult('getAdminAlbumUrlsStatus', urlRequestId);
+      if (!urlResult || !urlResult.ok || !Array.isArray(urlResult.urls)) {
+        clearLoadedOrder();
+        showStatus('error', (urlResult && urlResult.message) || 'Odkazy na alba ze sloupce T se nepodařilo načíst. Odesílání je zablokováno.');
+        return;
+      }
+      parentName.value = urlResult.parentName || result.parentName || '';
+      customerEmail.value = urlResult.email || result.email || '';
+      totalPrice.textContent = String(urlResult.totalPrice == null ? (result.totalPrice || 0) : urlResult.totalPrice) + ' Kč';
+      const orderItems = Array.isArray(urlResult.items) ? urlResult.items : (Array.isArray(result.items) ? result.items : []);
+      if (urlResult.urls.length !== orderItems.length) {
+        clearLoadedOrder();
+        showStatus('error', 'Počet položek a odkazů v tabulce nesouhlasí (' + orderItems.length + ' položek, ' + urlResult.urls.length + ' odkazů). Odesílání je zablokováno kvůli ochraně před přiřazením nesprávného alba.');
+        return;
+      }
+      const itemsWithSheetUrls = orderItems.map(function (item, index) {
+        return Object.assign({}, item, { albumUrl: (urlResult.urls[index] && urlResult.urls[index].albumUrl) || '' });
+      });
+      renderItems(itemsWithSheetUrls);
       clientData.classList.add('visible');
       sendBtn.disabled = false;
 
-      if (result.alreadySent) {
+      if (urlResult.alreadySent || result.alreadySent) {
         alreadySentWarning.classList.add('visible');
         sendBtn.textContent = 'Odeslat znovu zákazníkovi';
         showStatus('info', 'Objednávka č. ' + loadedOrderNumber + ' byla načtena. Podle sloupce U už byla dříve odeslána.');
@@ -265,7 +292,7 @@
 
     const requestId = createRequestId('album-send');
     const data = new URLSearchParams();
-    data.set('action', 'sendAlbumMail');
+    data.set('action', 'adminAlbumMailSend');
     data.set('request_id', requestId);
     data.set('password', passwordInput.value);
     data.set('order_number', orderNumber);
@@ -278,7 +305,7 @@
 
     try {
       postAction(data);
-      const result = await waitForResult('getAlbumMailStatus', requestId);
+      const result = await waitForResult('getAdminAlbumMailStatus', requestId);
 
       if (!result) {
         showStatus('error', 'Stav odeslání se nepodařilo ověřit. Neodesílejte zprávu okamžitě znovu – nejprve zkontrolujte e-mail a sloupec U v Google Sheets.');
