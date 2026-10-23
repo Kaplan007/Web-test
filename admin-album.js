@@ -243,14 +243,20 @@
       customerEmail.value = urlResult.email || result.email || '';
       totalPrice.textContent = String(urlResult.totalPrice == null ? (result.totalPrice || 0) : urlResult.totalPrice) + ' Kč';
       const orderItems = Array.isArray(urlResult.items) ? urlResult.items : (Array.isArray(result.items) ? result.items : []);
-      if (urlResult.urls.length !== orderItems.length) {
-        clearLoadedOrder();
-        showStatus('error', 'Počet položek a odkazů v tabulce nesouhlasí (' + orderItems.length + ' položek, ' + urlResult.urls.length + ' odkazů). Odesílání je zablokováno kvůli ochraně před přiřazením nesprávného alba.');
-        return;
-      }
+      // Merge the dedicated URL list with URLs already stored in each item.
+      // Some older Apps Script deployments return a shorter URL list while the
+      // item JSON still contains the correct albumUrl for later items.
       const itemsWithSheetUrls = orderItems.map(function (item, index) {
-        return Object.assign({}, item, { albumUrl: (urlResult.urls[index] && urlResult.urls[index].albumUrl) || '' });
+        const listedUrl = urlResult.urls[index] && urlResult.urls[index].albumUrl;
+        const itemUrl = item && item.albumUrl;
+        return Object.assign({}, item, { albumUrl: String(listedUrl || itemUrl || '').trim() });
       });
+      const missingUrls = itemsWithSheetUrls.filter(function (item) { return !item.albumUrl; }).length;
+      if (missingUrls) {
+        // Show every item so the admin can fill a missing link manually, but
+        // the required URL fields still prevent sending an incomplete email.
+        showStatus('info', 'Načteno ' + itemsWithSheetUrls.length + ' položek. U ' + missingUrls + ' položky chybí odkaz na album; doplňte jej před odesláním.');
+      }
       renderItems(itemsWithSheetUrls);
       clientData.classList.add('visible');
       sendBtn.disabled = false;
