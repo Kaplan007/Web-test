@@ -25,6 +25,8 @@ Tento doplněk přidává nové obslužné funkce vedle stávajícího Apps Scri
 
 - Zdroj je existující list `Objednávky` ve stávající tabulce.
 - Soutěž A, číslo objednávky J, položky W, cena X, zaplaceno Y, poznámka Z a upomínka AA.
+- **Cena ve sloupci X je autoritativní.** U více fyzických řádků se stejným číslem objednávky se sečtou ceny X ze všech odpovídajících řádků. Načtení ani odeslání nesmí tuto cenu přepočítat z PRICE_PER_ITEM ani přepsat X.
+- Formulář odeslání alba podporuje nepovinnou vlastní poznámku do e-mailu (max. 2 000 znaků). Poznámka se připojí k textové i HTML verzi zprávy, bezpečně se escapuje a nezapisuje se do tabulky.
 - Více položek objednávky se čte z JSON ve W. Při odesílání fotografií se odkazy načítají z T pro všechny řádky se stejným číslem objednávky v J. Odkazy se přiřazují v pořadí řádků a položek; pokud počet nesouhlasí, odeslání se zablokuje.
 - Načítání nic nepřepisuje.
 - Úhrada se mění pouze v Y a jen pokud číslo objednávky odpovídá právě jednomu řádku.
@@ -37,7 +39,9 @@ Nové akce načítají všechny řádky se stejným číslem objednávky ve slou
 Nová akce adminAlbumMailSend:
 - znovu načte všechny řádky objednávky a ověří shodu jména rodiče a e-mailu;
 - ověří počet URL a jejich HTTPS formát;
-- zapíše URL a JSON položek do příslušných řádků, nikoli do jiné objednávky;
+- zapíše URL a JSON položek do příslušných řádků, nikoli do jiné objednávky, ale zachová cenu X;
+- použije součet cen X pro celkovou částku v e-mailu, QR platbě i logu odeslání;
+- volitelně připojí vlastní poznámku z pole email_note;
 - zapíše stav ANO do sloupce U u všech řádků až po úspěšném odeslání e-mailu;
 - zachová logování e-mailu a stav chyby, pokud odeslání selže.
 
@@ -47,7 +51,7 @@ Nová akce adminAlbumMailSend:
 1. Vytvořit zálohu existujícího Apps Scriptu.
 2. Přidat obsah apps-script/objednavky-admin-addon.gs do stejného Apps Script projektu.
 3. Doplnit výše uvedené větve do existujících doPost(e) a doGet(e); žádné existující větve neodstraňovat.
-4. Otestovat na kopii tabulky: jednu položku, více položek v jednom řádku W, více řádků se stejným číslem objednávky, chybějící URL, nesouhlasící e-maily a neúspěšné odeslání. Pro testovací e-mail použít kontrolovanou adresu.
+4. Otestovat na kopii tabulky: cenu X odlišnou od běžné ceny položky, součet X u více řádků, zachování X po odeslání, částku v QR platbě, poznámku s diakritikou a speciálními znaky, jednu položku, více položek v jednom řádku W, chybějící URL, nesouhlasící e-maily a neúspěšné odeslání. Pro testovací e-mail použít kontrolovanou adresu.
 5. Teprve po úspěšném testu nasadit novou verzi webové aplikace Apps Script.
 
 Toto doplnění samo o sobě nezmění živý Apps Script, dokud nebude vloženo a publikováno.

@@ -194,7 +194,7 @@ function handleAdminAlbumUrlsLoad_(data) {
     setRequestStatus("DN_ADMIN_ALBUM_URLS", requestId, {
       state: "DONE", ok: true, orderNumber: orderNumber,
       parentName: order.parentName, email: order.email,
-      alreadySent: order.alreadySent, totalPrice: items.length * PRICE_PER_ITEM,
+      alreadySent: order.alreadySent, totalPrice: order.totalPrice,
       items: items, urls: urls,
       message: "Položky a odkazy na alba byly načteny."
     });
@@ -222,6 +222,39 @@ function getAdminAlbumUrlsStatus_(params) {
  * Load a logical order even when legacy/manual data uses several rows with
  * the same order number. Each physical row remains the owner of its items.
  */
+function adminAlbumReadSheetPrice_(sheet, rowNumber) {
+  var value = sheet.getRange(rowNumber, DN_COLUMNS.TOTAL_PRICE).getValue();
+  var amount;
+
+  if (typeof value === "number") {
+    amount = value;
+  } else {
+    var normalized = String(value == null ? "" : value).trim();
+    if (!normalized) {
+      throw new Error("Ve sloupci X chybí cena objednávky (řádek " + rowNumber + ").");
+    }
+    normalized = normalized.replace(/\u00a0/g, "").replace(/\s/g, "").replace(/Kč/gi, "");
+    if (normalized.indexOf(",") >= 0 && normalized.indexOf(".") >= 0) {
+      if (normalized.lastIndexOf(",") > normalized.lastIndexOf(".")) {
+        normalized = normalized.replace(/\./g, "").replace(",", ".");
+      } else {
+        normalized = normalized.replace(/,/g, "");
+      }
+    } else if (normalized.indexOf(",") >= 0) {
+      normalized = normalized.replace(",", ".");
+    }
+    if (!/^\d+(?:\.\d{1,2})?$/.test(normalized)) {
+      throw new Error("Cena ve sloupci X není platná (řádek " + rowNumber + ").");
+    }
+    amount = Number(normalized);
+  }
+
+  if (!Number.isFinite(amount) || amount < 0 || amount > 10000000) {
+    throw new Error("Cena ve sloupci X je mimo povolený rozsah (řádek " + rowNumber + ").");
+  }
+  return Math.round(amount * 100) / 100;
+}
+
 function adminAlbumGetOrderMultiRow_(orderNumber) {
   var sheet = getOrderSheet();
   var lastRow = sheet.getLastRow();
@@ -229,6 +262,7 @@ function adminAlbumGetOrderMultiRow_(orderNumber) {
 
   var rows = sheet.getRange(2, 1, lastRow - 1, DN_COLUMNS.TOTAL_PRICE).getDisplayValues();
   var groups = [];
+  var totalPrice = 0;
   var parentName = "";
   var email = "";
   var alreadySent = false;
@@ -254,6 +288,9 @@ function adminAlbumGetOrderMultiRow_(orderNumber) {
       if (rich && rich.getLinkUrl()) rowAlbumUrl = String(rich.getLinkUrl()).trim();
     } catch (ignore) {}
 
+    var rowTotalPrice = adminAlbumReadSheetPrice_(sheet, rowNumber);
+    totalPrice += rowTotalPrice;
+
     var rowItems;
     try {
       rowItems = getStoredOrderItems(row, "");
@@ -269,7 +306,7 @@ function adminAlbumGetOrderMultiRow_(orderNumber) {
       rowItems[0].albumUrl = rowAlbumUrl;
     }
 
-    groups.push({ rowNumber: rowNumber, items: rowItems });
+    groups.push({ rowNumber: rowNumber, items: rowItems, totalPrice: rowTotalPrice });
   });
 
   if (!groups.length) throw new Error("Objednávka číslo " + orderNumber + " nebyla v tabulce nalezena.");
@@ -283,6 +320,7 @@ function adminAlbumGetOrderMultiRow_(orderNumber) {
     parentName: parentName,
     email: email,
     groups: groups,
+    totalPrice: Math.round(totalPrice * 100) / 100,
     alreadySent: alreadySent
   };
 }
@@ -311,6 +349,9 @@ function handleAdminAlbumMailSend_(data) {
     var orderNumber = String(data.order_number || "").trim();
     if (!/^\d{1,10}$/.test(orderNumber)) throw new Error("Neplatné číslo objednávky.");
 
+    var emailNote = String(data.email_note || "").trim();
+    if (emailNote.length > 2000) throw new Error("Poznámka do e-mailu může mít maximálně 2 000 znaků.");
+
     var order = adminAlbumGetOrderMultiRow_(orderNumber);
     var items = [];
     order.groups.forEach(function (group) {
@@ -334,7 +375,7 @@ function handleAdminAlbumMailSend_(data) {
       group.items.forEach(function (item) { items.push(item); });
     });
 
-    var totalPrice = items.length * PRICE_PER_ITEM;
+    var totalPrice = order.totalPrice;
     var firstAlbumUrl = items[0].albumUrl;
 
     // Persist URL + item details per physical row before sending, as the
@@ -344,7 +385,6 @@ function handleAdminAlbumMailSend_(data) {
       order.sheet.getRange(group.rowNumber, DN_COLUMNS.ALBUM_URL).setValue(safeSheetText(group.items[0].albumUrl));
       order.sheet.getRange(group.rowNumber, DN_COLUMNS.ITEM_COUNT).setValue(group.items.length);
       order.sheet.getRange(group.rowNumber, DN_COLUMNS.ITEMS_JSON).setValue(safeSheetText(groupJson));
-      order.sheet.getRange(group.rowNumber, DN_COLUMNS.TOTAL_PRICE).setValue(group.items.length * PRICE_PER_ITEM);
     });
     SpreadsheetApp.flush();
 
@@ -366,6 +406,10 @@ function handleAdminAlbumMailSend_(data) {
     var subject = "Objednávka číslo " + order.orderNumber + " – fotografie Dance Nation";
     var plainBody = buildAlbumMailPlainBody(order.orderNumber, items, totalPrice);
     var htmlBody = buildAlbumMailHtmlBody(order.orderNumber, items, totalPrice);
+    if (emailNote) {
+      plainBody += "\n\nDoplňující informace:\n" + emailNote;
+      htmlBody = appendAdminAlbumNoteHtml_(htmlBody, emailNote);
+    }
 
     MailApp.sendEmail({
       to: order.email,
@@ -402,6 +446,24 @@ function handleAdminAlbumMailSend_(data) {
     console.error("ALBUM MAIL MULTI-ROW CHYBA: " + (error.stack || error));
     return jsonResponse({ status: "ERROR", message: message });
   }
+}
+
+function appendAdminAlbumNoteHtml_(htmlBody, note) {
+  var escapedNote = String(note)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/\r\n|\r|\n/g, "<br>");
+  var block = '<div style="margin-top:24px;padding-top:16px;border-top:1px solid #ddd;">' +
+    '<strong>Doplňující informace:</strong><br>' + escapedNote + '</div>';
+  var lower = String(htmlBody || "").toLowerCase();
+  var closingIndex = lower.lastIndexOf("</body>");
+  if (closingIndex >= 0) return htmlBody.slice(0, closingIndex) + block + htmlBody.slice(closingIndex);
+  closingIndex = lower.lastIndexOf("</html>");
+  if (closingIndex >= 0) return htmlBody.slice(0, closingIndex) + block + htmlBody.slice(closingIndex);
+  return htmlBody + block;
 }
 
 function getAdminAlbumMailStatus_(params) {

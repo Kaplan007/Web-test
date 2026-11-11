@@ -14,6 +14,7 @@
 .album-admin-card h1 { margin-top:0; }
 .album-admin-card label { display:block; font-weight:600; margin:17px 0 7px; }
 .album-admin-card input { box-sizing:border-box; width:100%; max-width:520px; }
+.album-admin-card textarea { box-sizing:border-box; width:100%; max-width:520px; font:inherit; padding:10px; resize:vertical; }
 .album-admin-card button { margin-top:22px; }
 .admin-hint { font-size:13px; opacity:.75; margin-top:5px; }
 .admin-summary { margin-top:22px; padding:15px; border-radius:8px; background:#f6f6f6; border:1px solid #ddd; }
@@ -71,6 +72,9 @@
   <label>Objednané položky a odkazy na alba</label>
   <div id="albumItems"></div>
   <div class="admin-summary"><p><strong>Částka:</strong> <span id="totalPrice">—</span></p><p><strong>Účet:</strong> 332726377/0300</p><p><strong>Variabilní symbol:</strong> číslo objednávky</p><p><strong>QR platba:</strong> automaticky vložená do e-mailu</p></div>
+  <label for="emailNote">Vlastní poznámka do e-mailu (nepovinné)</label>
+  <textarea id="emailNote" name="email_note" rows="4" maxlength="2000" placeholder="Text se připojí na konec e-mailu."></textarea>
+  <div class="admin-hint">Poznámka se odešle pouze v tomto e-mailu; do objednávkové tabulky se nezapisuje.</div>
   <div id="alreadySentWarning" class="admin-sent-warning">Tato objednávka už má ve sloupci U hodnotu ANO. Dalším odesláním pošlete e-mail znovu.</div>
 </div>
 <button id="sendBtn" type="submit" disabled>Odeslat zákazníkovi</button>
@@ -79,6 +83,6 @@
 <div class="admin-links"><a href="admin-foceni.html">← Zpět na správu focení</a></div>
 </div></div></main>
 </div>
-<script defer src="main.js"></script><script defer src="admin-album.js?v=20261023-1"></script>
+<script defer src="main.js"></script><script defer src="admin-album.js?v=20261027-1"></script>
 </body>
 </html>

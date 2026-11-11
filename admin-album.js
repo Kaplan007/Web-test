@@ -15,6 +15,7 @@
   const customerEmail = document.getElementById('customerEmail');
   const albumItems = document.getElementById('albumItems');
   const totalPrice = document.getElementById('totalPrice');
+  const emailNote = document.getElementById('emailNote');
   const alreadySentWarning = document.getElementById('alreadySentWarning');
 
   let loadedOrderNumber = '';
@@ -51,6 +52,7 @@
     loadedItems = [];
     parentName.value = '';
     customerEmail.value = '';
+    emailNote.value = '';
     albumItems.innerHTML = '';
     totalPrice.textContent = '—';
     clientData.classList.remove('visible');
@@ -303,6 +305,7 @@
     data.set('password', passwordInput.value);
     data.set('order_number', orderNumber);
     data.set('albums_json', JSON.stringify(albums));
+    data.set('email_note', emailNote.value.trim());
 
     loadBtn.disabled = true;
     sendBtn.disabled = true;
