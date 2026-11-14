@@ -40,8 +40,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const close = new Date(year, month - 1, day - 1, 12, 0, 0);
-    if (close.getTime() <= Date.now()) {
-      return { ok: false, message: 'Automatická uzávěrka pro toto datum již proběhla. Zadejte budoucí termín soutěže.' };
+    const allowRetroactive = document.getElementById('allowRetroactive').checked;
+    if (!allowRetroactive && close.getTime() <= Date.now()) {
+      return { ok: false, message: 'Automatická uzávěrka pro toto datum již proběhla. Zadejte budoucí termín soutěže, nebo zaškrtněte dodatečnou výjimku.' };
     }
     return { ok: true };
   }
@@ -181,6 +182,7 @@ document.addEventListener('DOMContentLoaded', function () {
       data.set('competitionName', competitionName);
       data.set('competitionDate', competitionDate);
       data.set('activeCategories', JSON.stringify(categories));
+      data.set('allowRetroactive', document.getElementById('allowRetroactive').checked ? 'true' : 'false');
     }
 
     startBtn.disabled = true;
